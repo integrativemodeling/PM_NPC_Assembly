@@ -1,4 +1,4 @@
-\brief Code for spatiotemporal modeling of the NPC Aseembly Pathway
+\brief Code for spatiotemporal modeling of the NPC Assembly Pathway
 
 # Info
 IMP code for gathering information, model representation, model scoring, model sampling and filtering, and model anysis and validation of the NPC Assembly model. Run originally on IMP 2.17, checked on IMP2.20.
