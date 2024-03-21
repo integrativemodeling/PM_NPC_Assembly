@@ -1,8 +1,7 @@
 ### This directory contains code to analyze the spatiotemporal model of NPC assembly and the snapshot models along the pathway.
-#### For each script, we give a brief description and sample input.
+For each script, we give a brief description and sample input.
 
-- check_membrane_EV_1500.py - Script that calculates the violations in Nups excluded volume with the membrane.
-
+#### check_membrane_EV_1500.py - Script that calculates the violations in Nups excluded volume with the membrane.
 python /.../analysis/check_membrane_EV_1500.py 19_5min_ensemble.rmf 5min 0.01
 
 - check_membrane_binding_1500.py - Script that calculates the violations in Nups binding to the membrane.
