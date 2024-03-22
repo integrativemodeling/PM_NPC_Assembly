@@ -1,0 +1,83 @@
+# toggles for components of score function
+model_components:
+        go_model: True  # go-like terms
+        truncated: False  # use truncated harmonic in go-model (This version is not implemented)
+        useBonds: False   # toggle for using Bonds implementation
+        useTruncated: False # use truncated harmonic in go-model
+        useGaussian: False # use Gaussian potential for go-model
+        sterics: True  # include protein-protein sterics
+        gmm_restraint: True  # include density restraints
+        membrane: True  # include membrane
+        OverallPos: True # Restraint on the position of every Nup relative to its position in the fully assembled complex
+        XYRadial: False # Restraint on the postion of the nr y-complex to be the same distance from the X-axis as in the assembled complex
+        XYAxial: False # Restraint on the postion of the nr y-complex to the same X and Y positions as in the assembled complex
+        Zscore: False # restraint the upper and lower Z-position of all leaves
+        randomize_start: True   # randomize initial configuration
+        randomize_inside: False  # when true, Nups are only placed on the nucleoplasm side
+        brownian_dynamics: False  # toggle to sample with BD, if false, uses MC
+        steepest_descent: False  # perform steepest descent before sampling
+
+# parameters for nup representation
+nup_representation:
+        cg_model_rmf: "/wynton/group/sali/aplatham/NPC_assembly/Latham/pm_assembly/code/data/cg_models/fitted/mature_fitted.rmf"
+        remove_nups: True
+        included_nups_file: "/wynton/group/sali/aplatham/NPC_assembly/Latham/pm_assembly/simulations/included_nups/1_mature.config"
+
+# boundary parameters
+boundary:
+        boundary_k: 10.0
+        boundary_zo: 0.0
+        L: 2000.0  # simulation box edge length
+
+# parameters for membrane model
+membrane:
+        mem_type: "toroid"
+        R: 870.0 # inner diameter for toroidal pore model, major raduis is (R+h)/2, added 100A to account for membrane thickness
+        h: 300.0 # slab thickness in z for toroidal pore model
+        k_mem: 0.001
+        zo_mem: 0.0
+        zo_upper: 37.0
+        zo_lower: 0.0
+        ev_mem: 0.01
+
+# Go ff parameters
+go_model:
+        go_k: 0.01
+        go_cutoff: 50.0
+        sterics_k: 0.01
+        sterics_slack: 100.0
+        trunc_cut: 10
+        weight: 1.0  # can set this to the string "recip" to set weight to 1 / num_go_bonds
+
+# em score parameters
+em_score:
+        gmm_target_density: "/wynton/group/sali/aplatham/NPC_assembly/Latham/pm_assembly/code/data/fit_etdata_with_gmm/Andrew_run/data/mature_150.gmm"
+        gmm_sig_mass: 1.0
+        gmm_scaling_factor: 10
+        gmm_model_cutoff: 250.0
+        gmm_data_cutoff: 250.0
+        gmm_slope: 0.0
+        omp_parallel: False
+        gmm_weight: 1000
+
+# position score parameters
+pos_score:
+        pos_sigma: 1000000
+        pos_tol: 0.0
+
+# simulation parameters
+mc:
+        steps: 1000000
+        wfrq: 1000
+        temperature_min: 300
+        temperature_max: 450
+        mc_max_trans: 1
+        mc_max_rot: 0.01
+        output_filename: "1_mature"
+
+steepest_descent_parameters:
+        sd_nsteps: 1000  # number of steepest descent steps
+
+brownian_dynamics_parameters:
+        time_step: 50.0  # in fs
+        temperature: 300.0
