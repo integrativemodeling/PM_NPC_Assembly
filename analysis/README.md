@@ -21,3 +21,9 @@ python /.../analysis/calc_EM_cc.py 19_5min_ensemble.rmf 19_5min.mrc 5min
 
 #### RMSD_native.py - Script to calculate the RMSD between each frame in an rmf file and the native NPC structure.
 python /.../analysis/RMSD_native.py 19_5min_ensemble.rmf 5min
+
+#### RMSD_native.py - Script to calculate the RMSD between each frame in an rmf file and the native NPC structure.
+python /.../analysis/RMSD_native.py 19_5min_ensemble.rmf 5min
+
+#### check_num_states.py - Scipt to check the total number of simulations, the number of total sampled states, and the number of good scoring states selected for a spatiotemporal model.
+python /.../check_num_states.py
