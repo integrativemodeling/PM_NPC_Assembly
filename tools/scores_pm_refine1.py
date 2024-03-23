@@ -1,8 +1,6 @@
 """
-Implementations of score terms used in the structural sampling of NPC intermediates.
+Implementations of scoring terms used in the structural sampling of NPC intermediates. These scores are for the first refinement round of structural sampling, with excluded volume implemented at the protein level.
 """
-
-
 from gmm_util import decorate_gmm_from_text
 import IMP.core
 import IMP.algebra

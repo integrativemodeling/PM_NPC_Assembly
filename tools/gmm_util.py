@@ -1,7 +1,6 @@
-"""@namespace IMP.isd.gmm_tools
-   Tools for handling Gaussian Mixture Models.
 """
-
+Tools for handling gmms. From IMP.isd.gmm_tools. Used in the various scoring functions.
+"""
 from __future__ import print_function
 import IMP
 import IMP.core

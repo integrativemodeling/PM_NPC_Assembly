@@ -1,8 +1,6 @@
 """
-Implementations of score terms used in the structural sampling of NPC intermediates.
+Implementations of scoring terms used in the structural sampling of NPC intermediates. These scores are for the initial round of structural sampling.
 """
-
-
 from gmm_util import decorate_gmm_from_text
 import IMP.core
 import IMP.algebra
@@ -323,11 +321,12 @@ def go_gaussian_2(m, ps, k, sigma, cutoff, name="go_restraints"):
 
 def sterics(ps, k, slack, name="excluded_volume"):
     """
-    Instantiate sterics.
+    Instantiate sterics. Here, sterics will be ignored.
     """
 
-    # add excluded volume terms between proteins
+    # add excluded volume terms between proteins. WARNING: Here, no ListSingletonContainer is initiated, so Excluded volume will be ignored.
     ev = IMP.core.ExcludedVolumeRestraint(ps, k, slack, name)
+    print('WARNING: Excluded volume not implemented at this stage of sampling')
 
     return ev
 
