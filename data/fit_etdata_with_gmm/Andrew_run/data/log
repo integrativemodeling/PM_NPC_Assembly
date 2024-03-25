@@ -1,0 +1,36 @@
+Fri Nov  4 09:12:55 PDT 2022
+qb3-ih58
+==============================================================
+job_number:                 9976219
+exec_file:                  job_scripts/9976219
+submission_time:            Fri Nov  4 09:12:32 2022
+owner:                      aplatham
+uid:                        11132
+group:                      sali
+gid:                        455
+sge_o_home:                 /wynton/home/sali/aplatham
+sge_o_log_name:             aplatham
+sge_o_path:                 /salilab/diva1/home/anaconda/anaconda3/bin:/salilab/diva1/home/anaconda/anaconda3/condabin:/wynton/home/sali/aplatham/Programs/imp/build/bin:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/EMageFit:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/algebra:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/atom:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/benchmark:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/cgal:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/cnmultifit:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/container:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/core:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/display:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/domino:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/em:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/em2d:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/example:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/foxs:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/gsl:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/integrative_docking:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/isd:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/kernel:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/kinematics:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/kmeans:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/misc:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/mmcif:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/modeller:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/mpi:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/multi_state:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/multifit:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/npc:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/npcassembly:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/parallel:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/pepdock:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/pmi:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/rmf:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/rotamer:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/saxs:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/saxs_merge:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/score_functor:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/scratch:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/spb:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/statistics:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/symmetry:/wynton/home/sali/aplatham/Programs/imp/build/module_bin/test:/wynton/home/sali/aplatham/Programs/plumed-2.5.7/src/lib:/wynton/home/sali/aplatham/Programs/plumed-2.5.7/src/lib:/opt/sge/bin:/opt/sge/bin/lx-amd64:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/wynton/home/sali/aplatham/.local/bin:/wynton/home/sali/aplatham/bin
+sge_o_shell:                /bin/bash
+sge_o_workdir:              /wynton/home/sali/aplatham/NPC_Assembly/Tempkin_rerun/pm_assembly_code/src/fit_etdata_with_gmm/Andrew_run/data
+sge_o_host:                 log1
+account:                    sge
+cwd:                        /wynton/home/sali/aplatham/NPC_Assembly/Tempkin_rerun/pm_assembly_code/src/fit_etdata_with_gmm/Andrew_run/data
+merge:                      y
+hard resource_list:         h_rt=172800,h_vmem=24G
+mail_list:                  aplatham@log1
+notify:                     FALSE
+job_name:                   gmm_test
+stdout_path_list:           NONE:NONE:log
+jobshare:                   0
+hard_queue_list:            !*gpu.q
+restart:                    n
+shell_list:                 NONE:/bin/bash
+env_list:                   TERM=NONE
+script_file:                job.sh
+project:                    salilab
+binding:                    NONE
+job_type:                   NONE
+usage         1:            cpu=00:00:00, mem=0.00000 GB s, io=0.00000 GB, vmem=N/A, maxvmem=N/A
+binding       1:            NONE
+scheduling info:            (Collecting of scheduler job information is turned off)

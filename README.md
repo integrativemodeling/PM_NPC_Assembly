@@ -13,8 +13,8 @@ _Publications_:
 - A Latham, et al., in preparation. (2024).
 - S Otsuka, et al., A quantitative map of nuclear pore assembly reveals two distinct mechanisms. Nature 613, 575–581 (2023).
 
-The code is divided into directories. They are referenced in order of the steps necessary to create the model of NPC assembly:
-1. data - ...
+The code is divided into directories. Here, they are referenced in order of the steps necessary to create the model of NPC assembly:
+1. data - Input information for the NPC assembly model and code for pre-processing that information.
 2. align_npc - Code for the aligning the mature NPC structure to time-dependent ET maps.
 3. included_nups - ...
 4. start_sim - Code to run initial simulations of snapshot models.
