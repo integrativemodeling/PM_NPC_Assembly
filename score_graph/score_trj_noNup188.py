@@ -7,7 +7,7 @@ import IMP.spatiotemporal as spatiotemporal
 from IMP.spatiotemporal import analysis
 import os
 
-input_dir='/.../simulations_round2/Refined_energies_1model_200/filtered_noNup188/'
+input_dir='/.../simulations_round2/Refined_energies_1model_460/filtered_noNup188/'
 # go to input_dir
 os.chdir(input_dir)
 

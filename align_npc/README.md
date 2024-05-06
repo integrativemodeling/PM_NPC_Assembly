@@ -1,5 +1,5 @@
 ### This directory contains code for the aligning the mature NPC structure to time-dependent ET maps.
-These scripts are implement scoring functions called by their various sampling scripts.
+This step selects the initial NPC structure who's native interactions are aligned to the ET map at that timepoint.
 
 #### align_npc.py - Script that computes the best fit (via cross correlation coefficient) between the forward model of the mature pore and an ET map by enumerating over multiple rotations at a single translation.
 python /.../align_npc/align_npc.py 5min 0.0

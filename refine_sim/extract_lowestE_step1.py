@@ -19,20 +19,29 @@ replicas=8
 
 file_start=sys.argv[1]
 
-score=1000000000000
+sim_frames=200
 
-# loop over all simulation replicas
-for i in range(replicas):
-    # load the scores
-    scores_fn=file_start+'_step1_'+str(i)+'.log'
-    score_list = np.loadtxt(scores_fn)
-    N = len(score_list)
-    # find the lowest score
-    for j in range(N):
-        if score_list[j][2] < score:
-            score = score_list[j][2]
-            frame = j
-            replica = i
+score = 10000000000000
+frame = -1
+replica = -1
+# for each replica
+for rep in range(0, replicas):
+    # Name of log file, with energies
+    log =  file_start + '_step1_' + str(rep) + '.log'
+    dat = np.loadtxt(log)
+    if len(dat) > 0:
+        # read in all energies, starting at 1/2 way through the simulation (Note: 3rd column in this case)
+        energy = dat[:, 2]
+        # Check energy list is the correct size
+        if len(energy) != sim_frames:
+            print('Error!!! Check energy at state:')
+            print(results_dir + '/' + log)
+        for sim_step in range(0, sim_frames):
+            temp_E = energy[(sim_frames-1) - sim_step]
+            if temp_E < score:
+                score=temp_E
+                frame=(sim_frames-1) - sim_step
+                replica=rep
 # Load the rmf file. Write the frame of interest to a new file
 rmf_fn=file_start+'_step1_'+str(replica)+'.rmf'
 outfile=file_start+'_step1_final.rmf'

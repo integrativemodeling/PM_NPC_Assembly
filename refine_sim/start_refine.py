@@ -11,14 +11,14 @@ import numpy as np
 
 # Directories
 main_dir='/.../simulations_round2/'
-code_dir='/.../'
+code_dir='/.../code/'
 sim_index='200'
 results_dir='results'+sim_index
 
 # parameters
 # take this data from the included Nups directory. Includes times of each simulation and number of states for each
 times=['5min','6min','8min','10min','15min','mature']
-N_sims={'5min':19,'6min':24,'8min':24,'10min':13,'15min':8,'mature':1}
+N_sims={'5min':15,'6min':20,'8min':22,'10min':18,'15min':15,'mature':1}
 # random seed to ensure simulations are different
 seed='78'+sim_index*4+'013958'
 # number of mpi slots to use for replica exchange
@@ -51,9 +51,9 @@ def write_config_step1(filename,main_dir,code_dir,sim_index,time,membrane_R,memb
     new.write('        randomize_inside: False  # when true, Nups are only placed on the nucleoplasm side\n')
     new.write('        start_from_rmf: True  # when true, starts from an existing rmf file\n')
     if time=='5min':
-        new.write('        start_pos: \"/.../simulations_round2/starting_rmfs/'+time+'_v3_s7g2/'+results_dir+'_'+sim_index+'_'+time+'.rmf\" # rmf to start from, if start_from_rmf\n')
+        new.write('        start_pos: \"/.../starting_rmfs/'+time+'_v3_s7g2/'+results_dir+'_'+sim_index+'_'+time+'.rmf\" # rmf to start from, if start_from_rmf\n')
     else:
-        new.write('        start_pos: \"/.../simulations_round2/starting_rmfs/'+time+'/'+results_dir+'_'+sim_index+'_'+time+'.rmf\" # rmf to start from, if start_from_rmf\n')
+        new.write('        start_pos: \"/.../starting_rmfs/'+time+'/'+results_dir+'_'+sim_index+'_'+time+'.rmf\" # rmf to start from, if start_from_rmf\n')
     new.write('        brownian_dynamics: False  # toggle to sample with BD, if false, uses MC\n')
     new.write('        steepest_descent: False  # perform steepest descent before sampling\n\n')
 
@@ -267,7 +267,7 @@ def write_array(filename,sim_time,nsims,seed,nslots,code_dir):
     new.write('mpirun -np $NSLOTS python main_restart1.py '+time+'_${SGE_TASK_ID}_step1.yml '+seed+'\n\n')
     new.write('python '+code_dir+'refine_sim/extract_lowestE_step1.py ${SGE_TASK_ID}_'+time+'\n\n')
     new.write('mpirun -np $NSLOTS python main_restart2.py '+time+'_${SGE_TASK_ID}_step2.yml '+seed+'\n\n')
-    new.write('rm *step1_*.rmf\n\n')
+    new.write('#rm *step1_*.rmf\n\n')
     new.write('date\nhostname\n\nqstat -j $JOB_ID')
     new.close()
 

@@ -26,16 +26,20 @@ lowestE_dir='/.../simulations_round2/starting_rmfs/'
 
 # times for simulations
 times=['5min','6min','8min','10min','15min','mature']
-N_sims={'5min':19,'6min':24,'8min':24,'10min':17,'15min':8,'mature':1}
+N_sims={'5min':15,'6min':20,'8min':22,'10min':18,'15min':15,'mature':1}
 
 # results directory
 main_dir='/.../simulations/'
 
-replicas=16
+replicas=8
+sim_frames=1000
 
 for time in times:
     # make directory for each time point
-    time_dir=lowestE_dir+time+'_v3_s7g2/'
+    if time=='5min':
+        time_dir=lowestE_dir+time+'_v3_s7g2/'
+    else:
+        time_dir = lowestE_dir + time +'/'
     if not os.path.exists(time_dir):
         os.makedirs(time_dir)
     os.chdir(time_dir)
@@ -43,23 +47,36 @@ for time in times:
     for result_folder in results_list:
         # for each Nup combination
         for sim_index in range(1,N_sims[time]+1):
+            prefix=str(sim_index)+'_'+time
             score = 10000000000000
             frame = -1
             replica = -1
             # for each replica
-            for i in range(replicas):
-                # load the scores
-                scores_fn=main_dir+result_folder+'/'+time+'_v3_s7g2/'+str(sim_index)+'_'+time+'/'+str(sim_index)+'_'+time+'_'+str(i)+'.log'
-                score_list = np.loadtxt(scores_fn)
-                N = len(score_list)
-                # find the lowest score
-                for j in range(N):
-                    if score_list[j][2] < score:
-                        score = score_list[j][2]
-                        frame = j
-                        replica = i
+            for rep in range(0, replicas):
+                # Name of log file, with energies
+                if time == '5min':
+                    log = main_dir + result_folder + '/' + time + '_v3_s7g2/' + str(sim_index) + '_' + time + '/' + str(sim_index) + '_' + time + '_' + str(rep) + '.log'
+                else:
+                    log = main_dir + result_folder + '/' + time + '/' + str(sim_index) + '_' + time + '/' + str(sim_index) + '_' + time + '_' + str(rep) + '.log'
+                dat = np.loadtxt(log)
+                if len(dat) > 0:
+                    # read in all energies, starting at 1/2 way through the simulation (Note: 3rd column in this case)
+                    energy = dat[:, 2]
+                    # Check energy list is the correct size
+                    if len(energy) != sim_frames:
+                        print('Error!!! Check energy at state:')
+                        print(results_dir + '/' + log)
+                    for sim_step in range(0, sim_frames):
+                        temp_E = energy[(sim_frames-1) - sim_step]
+                        if temp_E < score:
+                            score=temp_E
+                            frame=(sim_frames-1) - sim_step
+                            replica=rep
             # Load the rmf file. Write the frame of interest to a new file
-            rmf_fn=main_dir+result_folder+'/'+time+'_v3_s7g2/'+str(sim_index)+'_'+time+'/'+str(sim_index)+'_'+time+'_'+str(replica)+'.rmf'
+            if time=='5min':
+                rmf_fn=main_dir+result_folder+'/'+time+'_v3_s7g2/'+str(sim_index)+'_'+time+'/'+str(sim_index)+'_'+time+'_'+str(replica)+'.rmf'
+            else:
+                rmf_fn=main_dir+result_folder+'/'+time+'/'+str(sim_index)+'_'+time+'/'+str(sim_index)+'_'+time+'_'+str(replica)+'.rmf'
             outfile=result_folder + '_' + str(sim_index)+'_'+time+'.rmf'
             print('rmf: '+rmf_fn)
             print('frame: '+str(frame))

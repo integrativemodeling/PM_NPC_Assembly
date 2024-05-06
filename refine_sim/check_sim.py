@@ -12,7 +12,7 @@ results=['results1','results2','results3','results4','results5','results6','resu
 
 # take this data from the included Nups directory. Includes times of each simulation and number of states for each
 times=['5min','6min','8min','10min','15min','mature']
-N_sims={'5min':19,'6min':24,'8min':24,'10min':13,'15min':8,'mature':1}
+N_sims={'5min':15,'6min':20,'8min':22,'10min':18,'15min':15,'mature':1}
 
 
 

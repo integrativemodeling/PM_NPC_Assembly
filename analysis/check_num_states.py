@@ -19,7 +19,7 @@ if not os.path.exists(output_dir):
             os.mkdir(output_dir)
 
 times=['5min','6min','8min','10min','15min','mature']
-N_sims={'5min':19,'6min':24,'8min':24,'10min':13,'15min':8,'mature':1}
+N_sims={'5min':15,'6min':20,'8min':22,'10min':18,'15min':15,'mature':1}
 
 # function to filter energies in input_dir, write them to output_dir. Filtering is done by selecting all structures in the top X%.
 def read_energies(main_dir,input_dir,output_dir,times,N_sims):

@@ -1,5 +1,5 @@
 ### This directory contains code for the scoring function of snapshot models.
-These scripts are implement scoring functions called by their various sampling scripts.
+These scripts implement scoring functions called by the various sampling scripts (in start_sim  and refine_sim).
 
 #### gmm_util.py - Tools for handling gmms. From IMP.isd.gmm_tools. Used in the various scoring functions.
 

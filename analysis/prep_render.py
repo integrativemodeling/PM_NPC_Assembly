@@ -9,8 +9,6 @@ import IMP.core
 import IMP.atom
 import glob
 import sys
-sys.path.insert(0, "/wynton/home/sali/aplatham/NPC_Assembly/Tempkin_rerun/pm_assembly_code/src/analysis/sampling_analysis")
-
 
 def write_rmf_for_chimera(model, hc, geom, write_subcomplex):
     """Write color coded set of RMF files for reading into Chimera.
