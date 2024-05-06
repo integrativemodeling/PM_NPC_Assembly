@@ -7,7 +7,9 @@ _Author(s)_: Andrew Latham and Jeremy Tempkin
 
 _Maintainer_: alatham13
 
-_License_: 
+_License_: [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode).
+This work is freely available under the terms of the Creative Commons
+Attribution-ShareAlike 4.0 International License.
 
 _Publications_:
 - A Latham, et al., in preparation. (2024).
