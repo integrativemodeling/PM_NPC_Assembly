@@ -7,7 +7,7 @@ _Author(s)_: Andrew Latham and Jeremy Tempkin
 
 _Maintainer_: alatham13
 
-_License_: LGPL. This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+_License_: 
 
 _Publications_:
 - A Latham, et al., in preparation. (2024).

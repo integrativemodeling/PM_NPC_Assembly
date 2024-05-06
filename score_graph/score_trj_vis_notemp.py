@@ -7,14 +7,14 @@ import IMP.spatiotemporal as spatiotemporal
 from IMP.spatiotemporal import write_output
 import os
 
-input_dir='/wynton/group/sali/aplatham/NPC_assembly/Latham/pm_assembly/simulations_round2/Refined_energies_1model_200/filtered_noNup188/'
+input_dir='/.../simulations_round2/Refined_energies_1model_200/filtered_noNup188/'
 # go to input_dir
 os.chdir(input_dir)
 
 output_dir3=input_dir+'total_notemp_vis/'
 
 # Input variables.
-dict={'5min':19,'6min':24,'8min':24,'10min':13,'15min':8,'mature':1}
+dict={'5min':15,'6min':20,'8min':22,'10min':18,'15min':15,'mature':1}
 subcomplexes_original=['yc_inner_cr','yc_inner_nr','yc_outer_cr','yc_outer_nr','ir_core_1','ir_core_3','ir_core_2','ir_core_4','ir_chan_1','ir_chan_2','ir_chan_3','ir_chan_4','conn_1','conn_2']
 subcomplexes=[]
 for subcomplex in subcomplexes_original:

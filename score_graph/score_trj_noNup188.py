@@ -16,7 +16,7 @@ output_dir2=input_dir+'sampling2/'
 output_dir3=input_dir+'total/'
 
 # Input variables.
-dict={'5min':19,'6min':24,'8min':24,'10min':13,'15min':8,'mature':1}
+dict={'5min':15,'6min':20,'8min':22,'10min':18,'15min':15,'mature':1}
 subcomplexes_original=['yc_inner_cr','yc_inner_nr','yc_outer_cr','yc_outer_nr','ir_core_1','ir_core_3','ir_core_2','ir_core_4','ir_chan_1','ir_chan_2','ir_chan_3','ir_chan_4','conn_1','conn_2']
 subcomplexes=[]
 for subcomplex in subcomplexes_original:
