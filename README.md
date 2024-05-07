@@ -24,3 +24,5 @@ The code is divided into directories. Here, they are referenced in order of the 
 6. refine_sim - Code to run refinement simulations of snapshot models.
 7. score_graph - Code to score spatiotemporal models from a series of snapshot models.
 8. analysis - Code to analyze the spatiotemporal model of NPC assembly and the snapshot models along the pathway.
+
+The Zenodo version of this respository (XXX) also includes the model, in the simulations_round2 directory
