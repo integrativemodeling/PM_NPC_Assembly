@@ -1,6 +1,3 @@
-"""Script to analyze nup copy number of a model.
-Copy numbers are computed as the weighted sum of Nup copy numbers from each compositional state at each time point.
-Requires a labeled_pdf (sys.argv[1]). The Nup_folder variable should direct to the folder where the included_nups are located"""
 import sys
 import os
 import math
@@ -8,7 +5,6 @@ import numpy
 
 labeled_pdf=sys.argv[1]
 
-# read in labeled_pdf as a dictionary, with keys being each trajectory and values being the probability of that trajecotry
 def read_labeled_pdf(pdf_file):
     # create blank dictonary to store the results
     prob_dict = {}
@@ -34,8 +30,7 @@ def read_labeled_pdf(pdf_file):
 
 # For a trajectory, returns an array of Nup copy numbers as a function of time. The first value loops over the time, the second value loops over the Nup
 def copy_number_from_state(state):
-    # Directory for included_nups
-    Nup_folder = '/.../included_nups/'
+    Nup_folder = '/.../simulations_round2/included_nups/'
 
     state_list=state.split('|')
     state_list=state_list[:-1]
@@ -76,12 +71,7 @@ Nup_prob=[]
 for key in key_list:
     CN,N_times=copy_number_from_state(key)
     Nup_prob.append([prob_dict[key],CN])
-# Calculate the weight normalization terms
-V1=0
-V2=0
-for state in Nup_prob:
-    V1+=state[0]
-    V2+=state[0]*state[0]
+
 # Caclulate the copy number of each Nup as a function of time
 # Nup107  - index 0 ----------------------------------------------------------------------------------------------------
 copy_number=numpy.zeros((N_times,2))
@@ -93,11 +83,13 @@ for state in Nup_prob:
 # calculate std
 for state in Nup_prob:
     for i in range(N_times):
+        # Calculate variance
         copy_number[i,1]+=state[0]*((state[1][i][index]-copy_number[i,0])**2)
-    copy_number[i,1]=copy_number[i,1]/(V1-(V2/V1))
+# Take square root to get the standard deviation
+copy_number[:,1]=numpy.sqrt(copy_number[:,1])
 numpy.savetxt('Nup107_copy_number.txt',copy_number)
 
-# Nup107  - index 1 ----------------------------------------------------------------------------------------------------
+# Nup93  - index 1 ----------------------------------------------------------------------------------------------------
 copy_number=numpy.zeros((N_times,2))
 index=1
 # calculate mean
@@ -107,8 +99,10 @@ for state in Nup_prob:
 # calculate std
 for state in Nup_prob:
     for i in range(N_times):
+        # Calculate variance
         copy_number[i,1]+=state[0]*((state[1][i][index]-copy_number[i,0])**2)
-    copy_number[i,1]=copy_number[i,1]/(V1-(V2/V1))
+# Take square root to get the standard deviation
+copy_number[:,1]=numpy.sqrt(copy_number[:,1])
 numpy.savetxt('Nup93_copy_number.txt',copy_number)
 
 # Nup205  - index 2 ----------------------------------------------------------------------------------------------------
@@ -121,8 +115,10 @@ for state in Nup_prob:
 # calculate std
 for state in Nup_prob:
     for i in range(N_times):
+        # Calculate variance
         copy_number[i,1]+=state[0]*((state[1][i][index]-copy_number[i,0])**2)
-    copy_number[i,1]=copy_number[i,1]/(V1-(V2/V1))
+# Take square root to get the standard deviation
+copy_number[:,1]=numpy.sqrt(copy_number[:,1])
 numpy.savetxt('Nup205_copy_number.txt',copy_number)
 
 # Nup62  - index 3 ----------------------------------------------------------------------------------------------------
@@ -135,8 +131,10 @@ for state in Nup_prob:
 # calculate std
 for state in Nup_prob:
     for i in range(N_times):
+        # Calculate variance
         copy_number[i,1]+=state[0]*((state[1][i][index]-copy_number[i,0])**2)
-    copy_number[i,1]=copy_number[i,1]/(V1-(V2/V1))
+# Take square root to get the standard deviation
+copy_number[:,1]=numpy.sqrt(copy_number[:,1])
 numpy.savetxt('Nup62_copy_number.txt',copy_number)
 
 # Seh1  - index 4 ----------------------------------------------------------------------------------------------------
@@ -149,8 +147,10 @@ for state in Nup_prob:
 # calculate std
 for state in Nup_prob:
     for i in range(N_times):
+        # Calculate variance
         copy_number[i,1]+=state[0]*((state[1][i][index]-copy_number[i,0])**2)
-    copy_number[i,1]=copy_number[i,1]/(V1-(V2/V1))
+# Take square root to get the standard deviation
+copy_number[:,1]=numpy.sqrt(copy_number[:,1])
 numpy.savetxt('Seh1_copy_number.txt',copy_number)
 
 # Nup188  - index 5 ----------------------------------------------------------------------------------------------------
@@ -163,8 +163,10 @@ for state in Nup_prob:
 # calculate std
 for state in Nup_prob:
     for i in range(N_times):
+        # Calculate variance
         copy_number[i,1]+=state[0]*((state[1][i][index]-copy_number[i,0])**2)
-    copy_number[i,1]=copy_number[i,1]/(V1-(V2/V1))
+# Take square root to get the standard deviation
+copy_number[:,1]=numpy.sqrt(copy_number[:,1])
 numpy.savetxt('Nup188_copy_number.txt',copy_number)
 
 
