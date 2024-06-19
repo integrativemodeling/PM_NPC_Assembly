@@ -186,8 +186,8 @@ def calc_likelihood(exp_comp_map, t, state):
            2) "mean", the average protein copy number at that time point
            from experiment, and 3) "std", the standard deviation of that
            protein copy number from experiment.
-    @param nodes: list of graphNode objects, which have been already been
-           initiated with static scores
+    @param state: list of protein copy numbers for a given state
+    @param t: time to find the mean / std
     @return nodes: editted list of graphNode objects, which now have static
             and composition scores
     """
