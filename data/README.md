@@ -1,6 +1,6 @@
 ### This directory contains the input information for the NPC assembly model and code for pre-processing that information.
 
-#### qfluor_data - series of csv files with FCS data for each protein used in model scoring. For each protein, the intensity as a function of time is listed for independent experiments.
+#### qfluor_data - series of csv files with FCS data for each protein used in model scoring. For each protein, the intensity as a function of time is listed for independent experiments. This is then converted into the mean and standard deviation as a function of time (Exp_data.txt).
 
 #### fit_etdata_with_gmm - code to fit a gmm to experimental mrc profiles. Fitting is done using gmconvert. We used 150 Gaussians for fitting. (qsub run_gmconvert2.sh)
 
