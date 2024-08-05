@@ -49,4 +49,4 @@ nodes2,graph2,graph_prob2,graph_scores2=spatiotemporal.create_DAG(dict,scorestr=
 nodes3,graph3,graph_prob3,graph_scores3=spatiotemporal.create_DAG(dict,scorestr='_scores_tot.log',npaths=6,input_dir=input_dir,output_dir=output_dir3,spatio_temporal_rule=False,expected_subcomplexes=subcomplexes,score_comp=True,exp_comp_map=exp_comp)
 analysis.temporal_precision(output_dir1+'labeled_pdf.txt',output_dir2+'labeled_pdf.txt')
 analysis.temporal_precision(full_model+'labeled_pdf.txt',output_dir3+'labeled_pdf.txt',output_fn='full_model_comp.txt')
-analysis.purity(output_dir3+'labeled_pdf.txt',output_fn = output_dir3+'purity.txt')
+analysis.precision(output_dir3+'labeled_pdf.txt',output_fn = output_dir3+'precision.txt')

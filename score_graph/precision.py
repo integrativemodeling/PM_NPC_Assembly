@@ -1,5 +1,5 @@
 """
-Calculates the model precision (purity) of the full assembly model.
+Calculates the model precision of the full assembly model.
 Make sure the model directory is correctly specified.
 """
 # import relevant modules
@@ -14,4 +14,4 @@ os.chdir(input_dir)
 
 output_dir3=input_dir+'total/'
 
-analysis.purity(output_dir3+'labeled_pdf.txt',output_fn = output_dir3+'purity.txt')
+analysis.precision(output_dir3+'labeled_pdf.txt',output_fn = output_dir3+'precision.txt')
