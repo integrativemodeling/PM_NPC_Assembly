@@ -1,6 +1,6 @@
 title: Postmitotic nuclear pore complex assembly pathway
 tags: [spatiotemporal, cryo-ET, FCS]
-prereqs: [python/matplotlib, python/graphviz]
+prereqs: [python/matplotlib]
 test:
     runtime: 24h
     build: release
