@@ -24,6 +24,7 @@ import ihm.dumper
 import ihm.citations
 import ihm.reference
 import ihm.analysis
+import random
 import os
 import re
 from Bio import SeqIO
@@ -31,7 +32,7 @@ from io import StringIO
 import requests
 
 main_dir='../'
-main_dir2='../'
+main_dir2='../../'
 
 """times=['5min','6min','8min','10min','15min','mature']
 best_states={'5min':'2_5min','6min':'10_6min','8min':'14_8min',
@@ -62,8 +63,8 @@ system.citations.append(ihm.Citation(
           pmid='XXX', title=title,
           journal="XXX", volume=1, page_range=(1,1),
           year=2024,
-          authors=['Latham AP', 'Tempkin JOB', 'Otsuka S',
-                   'Zhang W', 'Ellenberg J', 'Sali A'],
+          authors=['Latham, A.P.', 'Tempkin, J.O.B.', 'Otsuka, S.',
+                   'Zhang, W.', 'Ellenberg, J.', 'Sali, A.'],
           doi='XXX'))
 
 # Modeling was performed in IMP
@@ -92,26 +93,30 @@ def build_entity_template(hc_tmpl, system):
     for subcomplex in hc_tmpl.get_children():
         for template in subcomplex.get_children():
             name = template.get_name().split("_")[0]
-            unique_name="_".join([name, subcomplex.get_name()])
+            if name not in entities_dict.keys():
 
-            # Get sequence for correct uniprot entity depending on the name
-            """
-            #ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
-            URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
-            response = requests.post(URL)
-            cData = ''.join(response.text)
-            Seq = StringIO(cData)
-            seq_dat = list(SeqIO.parse(Seq, 'fasta'))
-            sequence=seq_dat[0].seq
-            entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])
-            """
+                # Get sequence for correct uniprot entity depending on the name
+                """
+                #ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
+                URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
+                response = requests.post(URL)
+                cData = ''.join(response.text)
+                Seq = StringIO(cData)
+                seq_dat = list(SeqIO.parse(Seq, 'fasta'))
+                sequence=seq_dat[0].seq
+                entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])
+                """
 
-            # Add empty sequence to save time. For debugging
-            sequence = 'A' * 100
-            entity = ihm.Entity(sequence, description=unique_name)
+                # Add empty sequence to save time. For debugging
+                AAs=['R','H','K','D','E','S','T','N','Q','C','G','P','A','V','I','L','M','F','Y','W']
+                sequence=''
+                for i in range(100):
+                    AA_choice=random.randint(0, len(AAs)-1)
+                    sequence += AAs[AA_choice]
+                entity = ihm.Entity(sequence, description=name)
 
-            entities_dict[unique_name] = entity
-            system.entities.append(entity)
+                entities_dict[name] = entity
+                system.entities.append(entity)
 
     return entities_dict
 # Load mature hierarchy
@@ -132,8 +137,8 @@ def build_new_assembly_from_entities(hc_sc, edict, syst, asym_unit_map=None):
     sc_representation = []
     for nup in nups:
         name = nup.get_name().split("_")[0]
-        unique_name = "_".join([name, hc_sc.get_name()])
-        asu = ihm.AsymUnit(edict[unique_name], details=unique_name)
+        # unique_name = "_".join([name, hc_sc.get_name()])
+        asu = ihm.AsymUnit(edict[name], details=name)
         nres = len(nup.get_children())
         rep = ihm.representation.FeatureSegment(asu,
                                                 rigid=True,
@@ -305,7 +310,6 @@ class MyModel(ihm.model.Model):
                     # parse info for sphere
                     x, y, z = IMP.core.XYZR(leaf).get_coordinates()
                     resids = IMP.atom.Fragment(leaf).get_residue_indexes()
-                    print(_asym, x, y, z, resids)
                     R = IMP.core.XYZR(leaf).get_radius()
                     yield ihm.model.Sphere(asym_unit=_asym,
                                            seq_id_range = (resids[0],resids[-1]),
