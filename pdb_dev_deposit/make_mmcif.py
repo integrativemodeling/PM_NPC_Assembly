@@ -7,10 +7,11 @@ Asymmetric units correspond to nucleoporins.
 
 multiple AS can point to the same entity.
 
-Each NPC subcomplex is represented by grouping it's constituent beads into an
-ihm.Assembly grouping and the whole pore site is represented as ihm.Assembly of
-subcomplex assemblies (whose relationship is denoted by the parent trait of
-assemblies.
+Each snapshot is represented as a single assembly object, from which a model is generated.
+1 model (the centroid structure from the most representative cluster) is chosen per time point.
+Therefore, each state and each model group consist of a single model
+All models are then included in the state_group,
+and the ordered process of NPC assembly is represented as a series of model groups
 """
 
 import RMF
@@ -54,6 +55,8 @@ IMP_m = IMP.Model()
 
 # Function to load hierarchy from RMF. By default, loads the last frame
 def load_hc(best_state):
+    """Load the first frame of the centroid model for a given state (best state)
+    """
     # path to cluster centroid
     rmf_filename=(main_dir+'simulations_round2/Refined_energies_1model_460/filtered_noNup188/total/'
                   +best_state+'/cluster.0/cluster_center_model.rmf3')
@@ -97,7 +100,7 @@ print('Done.')
 
 # Include entities for each protein sequence
 print('Adding entities...')
-def build_entity_template(hc_tmpl, system):
+def build_entity_template(hc_tmpl):
     """Return an entity object for a Nup domain.
     """
     # Dictionary converting protein names to Uniprot entries
@@ -112,7 +115,7 @@ def build_entity_template(hc_tmpl, system):
             name = template.get_name().split("_")[0]
             if name not in entities_dict.keys():
 
-                """# Get sequence for correct uniprot entity depending on the name
+                # Get sequence for correct uniprot entity depending on the name
                 ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
                 URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
                 response = requests.post(URL)
@@ -120,15 +123,15 @@ def build_entity_template(hc_tmpl, system):
                 Seq = StringIO(cData)
                 seq_dat = list(SeqIO.parse(Seq, 'fasta'))
                 sequence=seq_dat[0].seq
-                entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])"""
+                entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])
 
-                # Add empty sequence to save time. For debugging
+                """# Add random sequence to save time. For debugging
                 AAs=['R','H','K','D','E','S','T','N','Q','C','G','P','A','V','I','L','M','F','Y','W']
                 sequence=''
                 for i in range(4000):
                     AA_choice=random.randint(0, len(AAs)-1)
                     sequence += AAs[AA_choice]
-                entity = ihm.Entity(sequence, description=name)
+                entity = ihm.Entity(sequence, description=name)"""
 
                 entities_dict[name] = entity
                 system.entities.append(entity)
@@ -137,13 +140,13 @@ def build_entity_template(hc_tmpl, system):
 # Load mature hierarchy
 hc_mature=load_hc(best_states[times[-1]])
 # Set entities from mature hierarchy
-possible_entities=build_entity_template(hc_mature,system)
+possible_entities=build_entity_template(hc_mature)
 print('Done.')
 
 # Define asymeteric units for each state
-print('Building asymeteric units...')
+print('Building asymmetric units...')
 def build_new_assembly_from_entities(hc_sc, edict, syst, asym_unit_map=None):
-    """Return an assembly instance pointing to the provided entity dictionary template.
+    """Return an asymmetric units and representation for each subcomplex
     """
 
     nups = [child for child in hc_sc.get_children() if "Density" not in child.get_name()]
@@ -239,6 +242,8 @@ print('Done.')
 # Define sampling of single snapshot model
 print('Adding protocol...')
 def snapshot_model_protocol(t,exp,assembly):
+    """Return protocol object used to model each snapshot
+    """
     # Define main_dir
     main_dir='../'
     # Describe the modeling protocol
@@ -300,6 +305,8 @@ print('Done.')
 
 # Define class to extract spheres
 class MyModel(ihm.model.Model):
+    """Create a unique class for model objects to read in coordinates from hierarchy
+    """
     # override the get_spheres subclass to pull coordinates from rmf file on disk
     def get_spheres(self):
         # Load hierarchy
@@ -327,6 +334,8 @@ class MyModel(ihm.model.Model):
 
 # function to find position restraint at a give time
 def find_pos_restraint(_system):
+    """Function to calculate position restraints
+    """
     _pos_restraint_list=[]
     template_rmf=main_dir+'data/cg_models/10/npc_cg.rmf'
     template_rmf_fh = RMF.open_rmf_file_read_only(template_rmf)
@@ -382,6 +391,8 @@ def find_pos_restraint(_system):
 
 # Function to find membrane bound portions of Nup155 and Nup160
 def find_MBM_residues(_system):
+    """Function to calculate membrane binding restraints
+    """
     _objects=[]
     for entity in _system.entities:
         if entity.description=="Nup155":
@@ -401,6 +412,7 @@ print('Adding ordered models to system...')
 # empty restraint vector
 restraint_list=[]
 pos_restraint_list=[]
+state_list=[]
 for i in range(nstates):
     # generate model from hc
     m = MyModel(assembly=assemblies_list[i], protocol=protocol_list[i], representation=representation, name=best_states[times[i]])
@@ -433,9 +445,10 @@ for i in range(nstates):
         +best_states[times[i]]+'/'+best_states[times[i]]+'_ensemble_v2.rmf',repo=None))
     # add state
     state = ihm.model.State([model_group])
+    state_list.append(state)
     # add to system
     system.ensembles.append(ensemble)
-    system.state_groups.append(ihm.model.StateGroup([state]))
+system.state_groups.extend([ihm.model.StateGroup(state_list)])
 # Add restraints to system
 system.restraints.extend(restraint_list)
 system.restraint_groups.extend(pos_restraint_list)
@@ -450,7 +463,7 @@ g = ihm.model.OrderedProcess('Time steps in NPC assembly.',
 # add connections between adjacent snapshots
 step = ihm.model.ProcessStep(description='Assembly trajectory of the NPC.')
 for i in range(len(system.state_groups[0])-1):
-    step.append(ihm.model.ProcessEdge(system.state_groups[0][i],system.state_groups[0][i+1]))
+    step.append(ihm.model.ProcessEdge(system.state_groups[0][i][0],system.state_groups[0][i+1][0]))
 g.steps.append(step)
 system.ordered_processes.append(g)
 print('Done.')
