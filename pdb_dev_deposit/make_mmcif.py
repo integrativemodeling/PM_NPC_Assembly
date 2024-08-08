@@ -3,7 +3,7 @@ Script to generate an mmCIF file suitable for deposition in PDB-dev.
 
 Entities correspond to unique protein sequences.
 
-Asymmetric units correspond to CG beads (in our model).
+Asymmetric units correspond to nucleoporins.
 
 multiple AS can point to the same entity.
 
@@ -33,11 +33,17 @@ import requests
 
 main_dir='../'
 
-"""times=['5min','6min','8min','10min','15min','mature']
+times=['5min','6min','8min','10min','15min','mature']
 best_states={'5min':'2_5min','6min':'10_6min','8min':'14_8min',
-             '10min':'4_10min','15min':'8_15min','mature':'1_mature'}"""
-times=['mature']
-best_states={'mature':'1_mature'}
+             '10min':'4_10min','15min':'8_15min','mature':'1_mature'}
+# Time dependent parameters for NPC assembly. Includes results and input information
+CCC={'5min':0.6661717242187478,'6min':0.6034028217725574,'8min':0.7963839913096493,
+     '10min':0.7757774850030276,'15min':0.7618849068526939,'mature':0.7542426645010205}
+nstructures={'5min':1121,'6min':881,'8min':801,'10min':801,'15min':1121,'mature':801}
+structural_precision={'5min':232.552,'6min':144.083,'8min':104.579,'10min':99.893,'15min':100.826,'mature':104.258}
+membrane_D={'5min':515.3,'6min':583.9,'8min':727.4,'10min':845.9,'15min':798.3,'mature':870.0}
+membrane_H={'5min':427.2,'6min':424.9,'8min':429.9,'10min':405.4,'15min':342.5,'mature':300.0}
+
 nstates=len(times)
 
 title = ("Integrative spatiotemporal modeling of biomolecular processes: "
@@ -49,7 +55,8 @@ IMP_m = IMP.Model()
 # Function to load hierarchy from RMF. By default, loads the last frame
 def load_hc(best_state):
     # path to cluster centroid
-    rmf_filename=main_dir+'simulations_round2/Refined_energies_1model_460/filtered_noNup188/total/'+best_state+'/cluster.0/cluster_center_model.rmf3'
+    rmf_filename=(main_dir+'simulations_round2/Refined_energies_1model_460/filtered_noNup188/total/'
+                  +best_state+'/cluster.0/cluster_center_model.rmf3')
     rmf_fh = RMF.open_rmf_file_read_only(rmf_filename)
     h = IMP.rmf.create_hierarchies(rmf_fh, IMP_m)[0]
     lowest_frame_id = rmf_fh.get_number_of_frames() - 1
@@ -82,7 +89,8 @@ imp = ihm.Software(
           name="gmconvert",
           version="2022/05/09",
           classification="Processing of input data to modeling.",
-          description="Program used to fit GMMs to 3DEM maps at each snapshot as well as fitting of forward model GMMs used in the restraints.",
+          description="Program used to fit GMMs to 3DEM maps at each snapshot as "
+                      "well as fitting of forward model GMMs used in the restraints.",
           location='https://pdbj.org/gmfit/doc_gmconvert/README_gmconvert.html')
 system.software.append(imp)
 print('Done.')
@@ -93,9 +101,10 @@ def build_entity_template(hc_tmpl, system):
     """Return an entity object for a Nup domain.
     """
     # Dictionary converting protein names to Uniprot entries
-    Uniprot_dict={'Nup133':'Q8WUM0', 'Nup107':'P57740', 'Nup96':'P52948', 'SEC13':'P55735', 'SEH1':'Q96EE3', 'Nup85':'Q9BW27',
-                  'Nup43':'Q8NFH3', 'Nup160':'Q12769', 'Nup37':'Q8NFH4', 'Nup93':'Q8N1F7', 'Nup205':'Q92621',
-                  'Nup155':'O75694', 'Nup188':'Q5SRE5', 'p54':'Q7Z3B4', 'p58':'Q9BVL2', 'p62':'P37198'}
+    Uniprot_dict={'Nup133':'Q8WUM0', 'Nup107':'P57740', 'Nup96':'P52948', 'SEC13':'P55735',
+                  'SEH1':'Q96EE3', 'Nup85':'Q9BW27', 'Nup43':'Q8NFH3', 'Nup160':'Q12769',
+                  'Nup37':'Q8NFH4', 'Nup93':'Q8N1F7', 'Nup205':'Q92621', 'Nup155':'O75694',
+                  'Nup188':'Q5SRE5', 'p54':'Q7Z3B4', 'p58':'Q9BVL2', 'p62':'P37198'}
     # Loop over all proteins
     entities_dict = {}
     for subcomplex in hc_tmpl.get_children():
@@ -103,22 +112,20 @@ def build_entity_template(hc_tmpl, system):
             name = template.get_name().split("_")[0]
             if name not in entities_dict.keys():
 
-                # Get sequence for correct uniprot entity depending on the name
-                """
-                #ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
+                """# Get sequence for correct uniprot entity depending on the name
+                ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
                 URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
                 response = requests.post(URL)
                 cData = ''.join(response.text)
                 Seq = StringIO(cData)
                 seq_dat = list(SeqIO.parse(Seq, 'fasta'))
                 sequence=seq_dat[0].seq
-                entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])
-                """
+                entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])"""
 
                 # Add empty sequence to save time. For debugging
                 AAs=['R','H','K','D','E','S','T','N','Q','C','G','P','A','V','I','L','M','F','Y','W']
                 sequence=''
-                for i in range(10000):
+                for i in range(4000):
                     AA_choice=random.randint(0, len(AAs)-1)
                     sequence += AAs[AA_choice]
                 entity = ihm.Entity(sequence, description=name)
@@ -159,31 +166,40 @@ def build_new_assembly_from_entities(hc_sc, edict, syst, asym_unit_map=None):
             asym_unit_map[unique_name] = asu
 
     syst.asym_units.extend(asym_units)
-    sc_assembly = ihm.Assembly(asym_units, description=hc_sc.get_name())
 
-    return sc_assembly, sc_representation, asym_units
+    return sc_representation, asym_units
 
+# Determine the overall representation and asymmetric units from the mature state
 # Variables to save
-representation_list=[]
 assemblies_list=[]
 asym_unit_map={}
+# variables for output
+representations=[]
+asym=[]
+# For each subcomplex
+for sc in hc_mature.get_children():
+    sc_rep, sc_asym = build_new_assembly_from_entities(sc, possible_entities, system, asym_unit_map=asym_unit_map)
+    # Add each subcomplex to the appropriate variables
+    representations.extend(sc_rep)
+    asym.extend(sc_asym)
+representation=ihm.representation.Representation(representations,name='Representation of '
+                                                                      'Nups in NPC assembly snapshot models')
+
+# Determine the list of assemblies at each timepoint
 # Loop over all times
 for i in range(nstates):
+    asym_list=[]
+    # Loop over all subcomplexes at each timepoint
     hc_temp=load_hc(best_states[times[i]])
-    # variables for output
-    assemblies=[]
-    representations=[]
-    asym=[]
-    # For each subcomplex
     for sc in hc_temp.get_children():
-        sc_assemble, sc_rep, sc_asym = build_new_assembly_from_entities(sc, possible_entities, system, asym_unit_map=asym_unit_map)
-        # Add each subcomplex to the appropriate variables
-        assemblies.extend(sc_assemble)
-        representations.extend(sc_rep)
-        asym.extend(sc_asym)
-    # Add variables to their respective lists
-    assemblies_list.append(ihm.Assembly(asym,name='Assembly at '+times[i]))
-    representation_list.append(ihm.representation.Representation(representations,name='Representation at '+times[i]))
+        # For each protein in the subcomplex
+        for nup in sc.get_children():
+            # Use unique name to find the corresponding asymmetric unit
+            name = nup.get_name().split("_")[0]
+            unique_name = "_".join([name, sc.get_name()])
+            asym_list.append(asym_unit_map[unique_name])
+    # Create assembly for that timepoint
+    assemblies_list.append(ihm.Assembly(asym_list,name='Assembly at '+times[i]))
 print('Done')
 
 
@@ -197,7 +213,8 @@ processed_EM_list=[]
 em_database_loc = ihm.location.EMPIARLocation("EMD-3820")
 raw_em = ihm.dataset.EMDensityDataset(em_database_loc,details='Original electron tomography dataset.')
 # Original FCS
-FCS_database_loc=ihm.location.DatabaseLocation("idr0115",details='Raw FCS data available on the Image Data Resource: https://idr.openmicroscopy.org/')
+FCS_database_loc=ihm.location.DatabaseLocation("idr0115",details=
+    'Raw FCS data available on the Image Data Resource: https://idr.openmicroscopy.org/')
 raw_FCS = ihm.dataset.Dataset(FCS_database_loc,details='Original fluorescence correlation spectroscopy dataset.')
 # Processed FCS
 FCS_excel_loc=ihm.location.InputFileLocation(main_dir+"data/qfluor_data/Exp_data.txt",repo=None)
@@ -209,21 +226,13 @@ pdb2_loc=ihm.location.PDBLocation("5ijo")
 pdb_structure2=ihm.dataset.PDBDataset(pdb1_loc,details='PDB for the inner ring')
 # Processed EM
 for i in range(0,len(times)):
-    em_processed_loc=ihm.location.InputFileLocation(main_dir+'data/fit_etdata_with_gmm/Andrew_run/data/'+times[i]+'_150.mrc',repo=None)
+    em_processed_loc=ihm.location.InputFileLocation(main_dir+
+        'data/fit_etdata_with_gmm/Andrew_run/data/'+times[i]+'_150.mrc',repo=None)
     processed_EM=ihm.dataset.EMDensityDataset(em_processed_loc,details='Processed EM data at '+times[i])
     processed_EM_list.append(processed_EM)
     # append all experimental data
     exp_data.append(ihm.dataset.DatasetGroup((raw_em,raw_FCS,processed_FCS,pdb_structure1,pdb_structure2,processed_EM),
                                               name='Snapshot model data for '+times[i]))
-print('Done.')
-
-# Add restraints to the model
-print('Adding restraints...')
-em_restraint_list=[]
-for i in range(nstates):
-    em_restraint=ihm.restraint.EM3DRestraint(processed_EM_list[i],assemblies_list[i],number_of_gaussians=150)
-    em_restraint_list.append(em_restraint)
-system.restraints.extend(em_restraint_list)
 print('Done.')
 
 
@@ -287,30 +296,14 @@ protocol_list=[]
 # Loop over each state and determine protocol for producing that state
 for i in range(nstates):
     protocol_list.append(snapshot_model_protocol(times[i],exp_data[i],assemblies_list[i]))
-# Skip protocol for scoring graphs. Included in output models
-"""# Protocols for graph modeling
-graph_prot=ihm.protocol.Protocol('Spatiotemporal modeling')
-# Build graphs of snapshot models
-graph_prot.steps.append(ihm.protocol.Step(
-                 assembly=assembly, dataset_group=All_data,
-                 method='Graph modeling',
-                 name='Enumerate and score graphs of trajectories of NPC assembly.',
-                 num_models_begin=1782000, num_models_end=5184,
-                 script_file=main_dir+'score_graph/score_trj_noNup188.py',
-                 ordered=True,software=imp))
-# Validation of graph
-graph_prot.steps.append(ihm.analysis.ValidationStep(
-                 feature='other', dataset_group=FCS_data_validate,
-                 details='Validate model against FCS data for Nup188 and Seh1,'
-                         ' which are not included in model scoring.',
-                 script_file=main_dir+'analysis/analyze_copy_number.py',
-                 software=imp))"""
 print('Done.')
 
 # Define class to extract spheres
 class MyModel(ihm.model.Model):
     # override the get_spheres subclass to pull coordinates from rmf file on disk
     def get_spheres(self):
+        # Load hierarchy
+        hc = load_hc(self.name)
         # for each subcomplex
         for nups in hc.get_children():
             # for each nup
@@ -332,17 +325,121 @@ class MyModel(ihm.model.Model):
                                            z=z,
                                            radius=R)
 
+# function to find position restraint at a give time
+def find_pos_restraint(_system):
+    _pos_restraint_list=[]
+    template_rmf=main_dir+'data/cg_models/10/npc_cg.rmf'
+    template_rmf_fh = RMF.open_rmf_file_read_only(template_rmf)
+    template_h = IMP.rmf.create_hierarchies(template_rmf_fh, IMP_m)[0]
+    lowest_frame_id = template_rmf_fh.get_number_of_frames() - 1
+    IMP.rmf.load_frame(template_rmf_fh, RMF.FrameID(lowest_frame_id))
+    # for each subcomplex
+    for subcomplex in template_h.get_children():
+        # Exclude EM particles
+        if subcomplex.get_name() not in ["Data_density", "Sigma"]:
+            # for each nup
+            for nup in subcomplex.get_children():
+                # Exclude EM particles
+                if nup.get_name() =='Density':
+                    continue
+                name = nup.get_name().split("_")[0]
+                unique_name = "_".join([name, subcomplex.get_name()])
+                # Get the asymmeteric unit for that Nup
+                _asym = asym_unit_map[unique_name]
+                # Read in leaves
+                for leaf in IMP.atom.get_leaves(nup):
+                    x, y, z = IMP.core.XYZR(leaf).get_coordinates()
+                    resids = IMP.atom.Fragment(leaf).get_residue_indexes()
+                    # feature in new system
+                    new_feature=ihm.restraint.ResidueFeature([_asym(resids[0],resids[-1])])
+                    # feature in old system
+                    old_feature=ihm.restraint.PseudoSiteFeature(ihm.restraint.PseudoSite(x,y,z))
+                    # Subcomplexes derived from 5ijo
+                    subcomplexes_5ijo=['ir_core_1', 'ir_core_2', 'ir_core_3', 'ir_core_4',
+                                       'ir_chan_1', 'ir_chan_2', 'ir_chan_3', 'ir_chan_4']
+                    # Subcomplexes derived from 5a9q
+                    subcomplexes_5a9q=['yc_inner_cr','yc_inner_nr','yc_outer_cr','yc_outer_nr','conn_1','conn_2']
+                    count=0
+                    # Find if subcomplex is in 5a9q
+                    for subcomplex_5a9q in subcomplexes_5a9q:
+                        if subcomplex_5a9q in unique_name:
+                            dataset_choice=pdb_structure1
+                            count+=1
+                    # Find if subcomplex is in 5ijo
+                    for subcomplex_5ijo in subcomplexes_5ijo:
+                        if subcomplex_5ijo in unique_name:
+                            dataset_choice=pdb_structure2
+                            count += 1
+                    # Check that exactly 1 subcomplex was found for each unique_name
+                    if count!=1:
+                        print('Warning. Incorrect subcomplex number found.')
+                        print(str(count)+' numbers of subcomplex '+unique_name+' were found')
+                    _pos_restraint_list.append(ihm.restraint.DerivedDistanceRestraint(dataset_choice,new_feature,
+                        old_feature,ihm.restraint.HarmonicDistanceRestraint(0.0)))
+
+    _pos_restraints=ihm.restraint.RestraintGroup(_pos_restraint_list)
+    return _pos_restraints
+
+# Function to find membrane bound portions of Nup155 and Nup160
+def find_MBM_residues(_system):
+    _objects=[]
+    for entity in _system.entities:
+        if entity.description=="Nup155":
+            obj1=entity(262,271)
+            _objects.append(obj1)
+        if entity.description=="Nup160":
+            obj2=entity(262,271)
+            _objects.append(obj2)
+    return ihm.restraint.ResidueFeature(_objects,details='Membrane bound residues on Nup155 and Nup160.')
+
+
 # Output the final models as a time ordered sequence
 # Includes only the centroid structure of each most
 # likely state at each time point
 # Add states to model
 print('Adding ordered models to system...')
-"""for i in range(nstates):
-    hc=load_hc(best_states[times[i]])
-    m = MyModel(assembly=assemblies_list[i], protocol=protocol_list[i], representation=representation_list[i])
+# empty restraint vector
+restraint_list=[]
+pos_restraint_list=[]
+for i in range(nstates):
+    # generate model from hc
+    m = MyModel(assembly=assemblies_list[i], protocol=protocol_list[i], representation=representation, name=best_states[times[i]])
+    # Add restraints
+    # EM restraint
+    em_restraint=ihm.restraint.EM3DRestraint(processed_EM_list[i],assemblies_list[i],number_of_gaussians=150)
+    em_restraint.fits[m]=ihm.restraint.EM3DRestraintFit(cross_correlation_coefficient=CCC[times[i]])
+    restraint_list.append(em_restraint)
+    # Membrane EV
+    NE=ihm.geometry.HalfTorus(ihm.geometry.Center(0,0,0),(membrane_D[times[i]]+membrane_H[times[i]])/2,
+        membrane_H[times[i]]/2,0,name='Nuclear envelope at time '+times[i]+'.')
+    membrane_EV_restraint=ihm.restraint.OuterSurfaceGeometricRestraint(processed_EM_list[i],NE,
+        ihm.restraint.ResidueFeature(system.entities),
+        ihm.restraint.HarmonicDistanceRestraint(0.0),harmonic_force_constant=0.01,restrain_all=True)
+    restraint_list.append(membrane_EV_restraint)
+    # Membrane attraction
+    find_data=find_MBM_residues(system)
+    membrane_attraction_restraint=ihm.restraint.InnerSurfaceGeometricRestraint(processed_EM_list[i],NE,
+        find_data,
+        ihm.restraint.HarmonicDistanceRestraint(0.0),harmonic_force_constant=0.001,restrain_all=True)
+    restraint_list.append(membrane_attraction_restraint)
+    # Position restraint
+    pos_restraint_list.append(find_pos_restraint(system))
+    # add model to model group
     model_group = ihm.model.ModelGroup([m], name="Centroid model at time "+times[i]+'.')
+    # add ensemble
+    ensemble = ihm.model.Ensemble(model_group,num_models=nstructures[times[i]],
+        precision=structural_precision[times[i]],file=ihm.location.InputFileLocation(
+        main_dir+'simulations_round2/Refined_energies_1model_460/filtered_noNup188/total/'
+        +best_states[times[i]]+'/'+best_states[times[i]]+'_ensemble_v2.rmf',repo=None))
+    # add state
     state = ihm.model.State([model_group])
+    # add to system
+    system.ensembles.append(ensemble)
     system.state_groups.append(ihm.model.StateGroup([state]))
+# Add restraints to system
+system.restraints.extend(restraint_list)
+system.restraint_groups.extend(pos_restraint_list)
+# Add ordered process
 g = ihm.model.OrderedProcess('Time steps in NPC assembly.',
                             description='Time steps based on enumerating and scoring all '
                             'sufficiently good scoring possible trajectories of NPC assembly. '
@@ -350,22 +447,12 @@ g = ihm.model.OrderedProcess('Time steps in NPC assembly.',
                             'Step 5: 15min, Step 6: mature. '
                             'Representative structures are the centroid structure from '
                             'the most populated cluster, from RMSD clustering.')
-system.ordered_processes.append(g)
+# add connections between adjacent snapshots
 step = ihm.model.ProcessStep(description='Assembly trajectory of the NPC.')
 for i in range(len(system.state_groups[0])-1):
     step.append(ihm.model.ProcessEdge(system.state_groups[0][i],system.state_groups[0][i+1]))
-g.steps.append(step)"""
-i=0
-print(system.restraints)
-hc=load_hc(best_states[times[i]])
-m = MyModel(assembly=assemblies_list[i], protocol=protocol_list[i], representation=representation_list[i])
-model_group = ihm.model.ModelGroup([m], name="Centroid model at time "+times[0]+'.')
-ensemble = ihm.model.Ensemble(model_group,num_models=801,precision=104.258,file=ihm.location.InputFileLocation(
-    main_dir+'simulations_round2/Refined_energies_1model_460/filtered_noNup188/total/'
-    +best_states[times[i]]+'/'+best_states[times[i]]+'_ensemble_v2.rmf',repo=None))
-state = ihm.model.State([model_group])
-system.ensembles.append(ensemble)
-system.state_groups.append(ihm.model.StateGroup([state]))
+g.steps.append(step)
+system.ordered_processes.append(g)
 print('Done.')
 
 # Update local paths
