@@ -125,8 +125,8 @@ def build_entity_template(hc_tmpl):
                 sequence=seq_dat[0].seq
                 entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])
 
-                """# Add random sequence to save time. For debugging
-                AAs=['R','H','K','D','E','S','T','N','Q','C','G','P','A','V','I','L','M','F','Y','W']
+                # Add random sequence to save time. For debugging
+                """AAs=['R','H','K','D','E','S','T','N','Q','C','G','P','A','V','I','L','M','F','Y','W']
                 sequence=''
                 for i in range(4000):
                     AA_choice=random.randint(0, len(AAs)-1)
@@ -317,7 +317,7 @@ class MyModel(ihm.model.Model):
             for nup in nups.get_children():
                 name = nup.get_name().split("_")[0]
                 unique_name = "_".join([name, nups.get_name()])
-                # Get the asymmeteric unit for that Nup
+                # Get the asymmetric unit for that Nup
                 _asym = asym_unit_map[unique_name]
                 # Read in leaves
                 for leaf in IMP.atom.get_leaves(nup):
@@ -333,10 +333,16 @@ class MyModel(ihm.model.Model):
                                            radius=R)
 
 # function to find position restraint at a give time
-def find_pos_restraint(_system):
+def find_pos_restraint(_assemblies):
     """Function to calculate position restraints
     """
+    # List of all assemblies in the current representation
+    _asym_units_list=[]
+    # Convert list of asymmetric unit objects to list of names
+    for _assembly in _assemblies:
+        _asym_units_list.append(_assembly.details)
     _pos_restraint_list=[]
+    # Load the template rmf of the mature NPC
     template_rmf=main_dir+'data/cg_models/10/npc_cg.rmf'
     template_rmf_fh = RMF.open_rmf_file_read_only(template_rmf)
     template_h = IMP.rmf.create_hierarchies(template_rmf_fh, IMP_m)[0]
@@ -353,53 +359,54 @@ def find_pos_restraint(_system):
                     continue
                 name = nup.get_name().split("_")[0]
                 unique_name = "_".join([name, subcomplex.get_name()])
-                # Get the asymmeteric unit for that Nup
-                _asym = asym_unit_map[unique_name]
-                # Read in leaves
-                for leaf in IMP.atom.get_leaves(nup):
-                    x, y, z = IMP.core.XYZR(leaf).get_coordinates()
-                    resids = IMP.atom.Fragment(leaf).get_residue_indexes()
-                    # feature in new system
-                    new_feature=ihm.restraint.ResidueFeature([_asym(resids[0],resids[-1])])
-                    # feature in old system
-                    old_feature=ihm.restraint.PseudoSiteFeature(ihm.restraint.PseudoSite(x,y,z))
-                    # Subcomplexes derived from 5ijo
-                    subcomplexes_5ijo=['ir_core_1', 'ir_core_2', 'ir_core_3', 'ir_core_4',
-                                       'ir_chan_1', 'ir_chan_2', 'ir_chan_3', 'ir_chan_4']
-                    # Subcomplexes derived from 5a9q
-                    subcomplexes_5a9q=['yc_inner_cr','yc_inner_nr','yc_outer_cr','yc_outer_nr','conn_1','conn_2']
-                    count=0
-                    # Find if subcomplex is in 5a9q
-                    for subcomplex_5a9q in subcomplexes_5a9q:
-                        if subcomplex_5a9q in unique_name:
-                            dataset_choice=pdb_structure1
-                            count+=1
-                    # Find if subcomplex is in 5ijo
-                    for subcomplex_5ijo in subcomplexes_5ijo:
-                        if subcomplex_5ijo in unique_name:
-                            dataset_choice=pdb_structure2
-                            count += 1
-                    # Check that exactly 1 subcomplex was found for each unique_name
-                    if count!=1:
-                        print('Warning. Incorrect subcomplex number found.')
-                        print(str(count)+' numbers of subcomplex '+unique_name+' were found')
-                    _pos_restraint_list.append(ihm.restraint.DerivedDistanceRestraint(dataset_choice,new_feature,
-                        old_feature,ihm.restraint.HarmonicDistanceRestraint(0.0)))
-
+                # Only include assemblies in the current NPC representation
+                if unique_name in _asym_units_list:
+                    # Get the asymmetric unit for that Nup
+                    _asym = asym_unit_map[unique_name]
+                    # Read in leaves
+                    for leaf in IMP.atom.get_leaves(nup):
+                        x, y, z = IMP.core.XYZR(leaf).get_coordinates()
+                        resids = IMP.atom.Fragment(leaf).get_residue_indexes()
+                        # feature in new system
+                        new_feature=ihm.restraint.ResidueFeature([_asym(resids[0],resids[-1])])
+                        # feature in old system
+                        old_feature=ihm.restraint.PseudoSiteFeature(ihm.restraint.PseudoSite(x,y,z))
+                        # Subcomplexes derived from 5ijo
+                        subcomplexes_5ijo=['ir_core_1', 'ir_core_2', 'ir_core_3', 'ir_core_4',
+                                           'ir_chan_1', 'ir_chan_2', 'ir_chan_3', 'ir_chan_4']
+                        # Subcomplexes derived from 5a9q
+                        subcomplexes_5a9q=['yc_inner_cr','yc_inner_nr','yc_outer_cr','yc_outer_nr','conn_1','conn_2']
+                        count=0
+                        # Find if subcomplex is in 5a9q
+                        for subcomplex_5a9q in subcomplexes_5a9q:
+                            if subcomplex_5a9q in unique_name:
+                                dataset_choice=pdb_structure1
+                                count+=1
+                        # Find if subcomplex is in 5ijo
+                        for subcomplex_5ijo in subcomplexes_5ijo:
+                            if subcomplex_5ijo in unique_name:
+                                dataset_choice=pdb_structure2
+                                count += 1
+                        # Check that exactly 1 subcomplex was found for each unique_name
+                        if count!=1:
+                            print('Warning. Incorrect subcomplex number found.')
+                            print(str(count)+' numbers of subcomplex '+unique_name+' were found')
+                        _pos_restraint_list.append(ihm.restraint.DerivedDistanceRestraint(dataset_choice,new_feature,
+                            old_feature,ihm.restraint.HarmonicDistanceRestraint(0.0)))
     _pos_restraints=ihm.restraint.RestraintGroup(_pos_restraint_list)
     return _pos_restraints
 
 # Function to find membrane bound portions of Nup155 and Nup160
-def find_MBM_residues(_system):
+def find_MBM_residues(_asymm_units):
     """Function to calculate membrane binding restraints
     """
     _objects=[]
-    for entity in _system.entities:
-        if entity.description=="Nup155":
-            obj1=entity(262,271)
+    for _asymm_unit in _asymm_units:
+        if "Nup155" in _asymm_unit.details:
+            obj1=_asymm_unit(262,271)
             _objects.append(obj1)
-        if entity.description=="Nup160":
-            obj2=entity(262,271)
+        if "Nup160" in _asymm_unit.details:
+            obj2=_asymm_unit(260,268)
             _objects.append(obj2)
     return ihm.restraint.ResidueFeature(_objects,details='Membrane bound residues on Nup155 and Nup160.')
 
@@ -425,17 +432,17 @@ for i in range(nstates):
     NE=ihm.geometry.HalfTorus(ihm.geometry.Center(0,0,0),(membrane_D[times[i]]+membrane_H[times[i]])/2,
         membrane_H[times[i]]/2,0,name='Nuclear envelope at time '+times[i]+'.')
     membrane_EV_restraint=ihm.restraint.OuterSurfaceGeometricRestraint(processed_EM_list[i],NE,
-        ihm.restraint.ResidueFeature(system.entities),
-        ihm.restraint.HarmonicDistanceRestraint(0.0),harmonic_force_constant=0.01,restrain_all=True)
+            ihm.restraint.ResidueFeature(assemblies_list[i]),
+            ihm.restraint.HarmonicDistanceRestraint(0.0),harmonic_force_constant=0.01,restrain_all=True)
     restraint_list.append(membrane_EV_restraint)
     # Membrane attraction
-    find_data=find_MBM_residues(system)
+    find_data=find_MBM_residues(assemblies_list[i])
     membrane_attraction_restraint=ihm.restraint.InnerSurfaceGeometricRestraint(processed_EM_list[i],NE,
         find_data,
         ihm.restraint.HarmonicDistanceRestraint(0.0),harmonic_force_constant=0.001,restrain_all=True)
     restraint_list.append(membrane_attraction_restraint)
     # Position restraint
-    pos_restraint_list.append(find_pos_restraint(system))
+    pos_restraint_list.append(find_pos_restraint(assemblies_list[i]))
     # add model to model group
     model_group = ihm.model.ModelGroup([m], name="Centroid model at time "+times[i]+'.')
     # add ensemble
