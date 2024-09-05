@@ -135,23 +135,28 @@ def build_entity_template(hc_tmpl):
                 ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
                 #ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],entity_begin=start_res[name],db_end=end_res[name],entity_end=end_res[name]))
                 # UniprotID is for the Nup98-Nup96 fusion protein. Offset the alignment by the length of Nup98
-                #if name=='Nup96':
-                #    ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],db_end=end_res[name]))
-                #else:
-                ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name], db_end=end_res[name]))
-                query_seqres = SeqIO.PdbIO.PdbAtomIterator(pdb_path+pdb_label[name][0]+'.pdb')
+                if name=='Nup96':
+                    ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name]+880,db_end=end_res[name]+880))
+                else:
+                    ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name], db_end=end_res[name]))
+                """query_seqres = SeqIO.PdbIO.PdbAtomIterator(pdb_path+pdb_label[name][0]+'.pdb')
                 count=0
                 for chain in query_seqres:
-                    print(chain)
                     if chain.id[-1] == pdb_label[name][1]:
-                        sequence = chain.seq
-                        count+=1
-                if count==1:
+                        sequence = chain.seq.replace('X','')
+                        count+=1"""
+                query_seqres = SeqIO.PdbIO.PdbSeqresIterator(pdb_path + pdb_label[name][0] + '.pdb')
+                count = 0
+                for chain in query_seqres:
+                    if chain.id[-1] == pdb_label[name][1]:
+                        sequence = chain.seq[start_res[name]-1:end_res[name]-1]
+                        count += 1
+                if count == 1:
                     print(Uniprot_dict[name])
                     print(sequence)
                     entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]), references=[ref])
                 else:
-                    print('Error! Check pdb file, '+str(count)+' sequences were found for '+name)
+                    print('Error! Check pdb file, ' + str(count) + ' sequences were found for ' + name)
 
                 """URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
                 response = requests.post(URL)
@@ -171,7 +176,7 @@ def build_entity_template(hc_tmpl):
 
                 entities_dict[name] = entity
                 system.entities.append(entity)
-
+    print(entities_dict)
     return entities_dict
 # Load mature hierarchy
 hc_mature=load_hc(best_states[times[-1]])
