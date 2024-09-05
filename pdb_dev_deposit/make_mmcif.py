@@ -103,6 +103,7 @@ print('Adding entities...')
 def build_entity_template(hc_tmpl):
     """Return an entity object for a Nup domain.
     """
+    pdb_path='../data/cg_models/'
     # Dictionary converting protein names to Uniprot entries
     Uniprot_dict={'Nup133':'Q8WUM0', 'Nup107':'P57740', 'Nup96':'P52948', 'SEC13':'P55735',
                   'SEH1':'Q96EE3', 'Nup85':'Q9BW27', 'Nup43':'Q8NFH3', 'Nup160':'Q12769',
@@ -118,6 +119,11 @@ def build_entity_template(hc_tmpl):
                     'SEH1': 322, 'Nup85': 475, 'Nup43': 380, 'Nup160': 1201,
                     'Nup37': 326, 'Nup93': 815, 'Nup205': 1692, 'Nup155': 1375,
                     'Nup188': 1564, 'p54': 493, 'p58': 418, 'p62': 502}
+    # Dictionary with pdbID and chainID for each protein
+    pdb_label = {'Nup133': ['5a9q','L'], 'Nup107': ['5a9q','M'], 'Nup96': ['5a9q','N'], 'SEC13': ['5a9q','O'],
+                    'SEH1': ['5a9q','P'], 'Nup85': ['5a9q','Q'], 'Nup43': ['5a9q','R'], 'Nup160': ['5a9q','S'],
+                    'Nup37': ['5a9q','T'], 'Nup93': ['5ijo','C'], 'Nup205': ['5ijo','D'], 'Nup155': ['5ijo','E'],
+                    'Nup188': ['5ijo','J'], 'p54': ['5ijo','R'], 'p58': ['5ijo','S'], 'p62': ['5ijo','T']}
     # Loop over all proteins
     entities_dict = {}
     for subcomplex in hc_tmpl.get_children():
@@ -127,18 +133,33 @@ def build_entity_template(hc_tmpl):
 
                 # Get sequence for correct uniprot entity depending on the name
                 ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
-                print(Uniprot_dict[name])
-                print(start_res[name])
-                print(end_res[name])
-                ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],entity_begin=start_res[name],db_end=end_res[name],entity_end=end_res[name]))
-                #ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],db_end=end_res[name]))
-                URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
+                #ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],entity_begin=start_res[name],db_end=end_res[name],entity_end=end_res[name]))
+                # UniprotID is for the Nup98-Nup96 fusion protein. Offset the alignment by the length of Nup98
+                #if name=='Nup96':
+                #    ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],db_end=end_res[name]))
+                #else:
+                ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name], db_end=end_res[name]))
+                query_seqres = SeqIO.PdbIO.PdbAtomIterator(pdb_path+pdb_label[name][0]+'.pdb')
+                count=0
+                for chain in query_seqres:
+                    print(chain)
+                    if chain.id[-1] == pdb_label[name][1]:
+                        sequence = chain.seq
+                        count+=1
+                if count==1:
+                    print(Uniprot_dict[name])
+                    print(sequence)
+                    entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]), references=[ref])
+                else:
+                    print('Error! Check pdb file, '+str(count)+' sequences were found for '+name)
+
+                """URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
                 response = requests.post(URL)
                 cData = ''.join(response.text)
                 Seq = StringIO(cData)
                 seq_dat = list(SeqIO.parse(Seq, 'fasta'))
                 sequence=seq_dat[0].seq
-                entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])
+                entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])"""
 
                 # Add random sequence to save time. For debugging
                 """AAs=['R','H','K','D','E','S','T','N','Q','C','G','P','A','V','I','L','M','F','Y','W']
