@@ -108,6 +108,16 @@ def build_entity_template(hc_tmpl):
                   'SEH1':'Q96EE3', 'Nup85':'Q9BW27', 'Nup43':'Q8NFH3', 'Nup160':'Q12769',
                   'Nup37':'Q8NFH4', 'Nup93':'Q8N1F7', 'Nup205':'Q92621', 'Nup155':'O75694',
                   'Nup188':'Q5SRE5', 'p54':'Q7Z3B4', 'p58':'Q9BVL2', 'p62':'P37198'}
+    # Dictionary with the starting residue number for each protein modeled
+    start_res = {'Nup133': 518, 'Nup107': 150, 'Nup96': 277, 'SEC13': 14,
+                    'SEH1': 1, 'Nup85': 9, 'Nup43': 4, 'Nup160': 41,
+                    'Nup37': 9, 'Nup93': 1, 'Nup205': 9, 'Nup155': 20,
+                    'Nup188': 1, 'p54': 128, 'p58': 248, 'p62': 334}
+    # Dictionary with the starting residue number for each protein modeled
+    end_res = {'Nup133': 1156, 'Nup107': 924, 'Nup96': 751, 'SEC13': 304,
+                    'SEH1': 322, 'Nup85': 475, 'Nup43': 380, 'Nup160': 1201,
+                    'Nup37': 326, 'Nup93': 815, 'Nup205': 1692, 'Nup155': 1375,
+                    'Nup188': 1564, 'p54': 493, 'p58': 418, 'p62': 502}
     # Loop over all proteins
     entities_dict = {}
     for subcomplex in hc_tmpl.get_children():
@@ -117,6 +127,11 @@ def build_entity_template(hc_tmpl):
 
                 # Get sequence for correct uniprot entity depending on the name
                 ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
+                print(Uniprot_dict[name])
+                print(start_res[name])
+                print(end_res[name])
+                ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],entity_begin=start_res[name],db_end=end_res[name],entity_end=end_res[name]))
+                #ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],db_end=end_res[name]))
                 URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
                 response = requests.post(URL)
                 cData = ''.join(response.text)
