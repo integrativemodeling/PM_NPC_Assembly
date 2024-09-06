@@ -138,9 +138,6 @@ def build_entity_template(hc_tmpl,start_res,end_res):
                 if name=='Nup96':
                     ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name]+880,db_end=end_res[name]+880))
                 else:
-                    print(name)
-                    print(start_res[name])
-                    print(end_res[name])
                     ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name], db_end=end_res[name]))
                 query_seqres = SeqIO.PdbIO.PdbSeqresIterator(pdb_path + pdb_label[name][0] + '.pdb')
                 count = 0
@@ -156,7 +153,11 @@ def build_entity_template(hc_tmpl,start_res,end_res):
                 entities_dict[name] = entity
                 system.entities.append(entity)
     print('Checking entities_dict...')
+    print('accession: '+entities_dict['p62'].references[0].accession)
     print('db_begin: '+str(entities_dict['p62'].references[0].alignments[0].db_begin)+' db_end: '+str(entities_dict['p62'].references[0].alignments[0].db_end))
+    print('accession: ' + entities_dict['Nup133'].references[0].accession)
+    print('db_begin: ' + str(entities_dict['Nup133'].references[0].alignments[0].db_begin) + ' db_end: ' + str(
+        entities_dict['Nup133'].references[0].alignments[0].db_end))
     return entities_dict
 # Load mature hierarchy
 hc_mature=load_hc(best_states[times[-1]])
