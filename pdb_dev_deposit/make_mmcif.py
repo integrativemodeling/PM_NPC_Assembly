@@ -138,6 +138,9 @@ def build_entity_template(hc_tmpl,start_res,end_res):
                 if name=='Nup96':
                     ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name]+880,db_end=end_res[name]+880))
                 else:
+                    print(name)
+                    print(start_res[name])
+                    print(end_res[name])
                     ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name], db_end=end_res[name]))
                 query_seqres = SeqIO.PdbIO.PdbSeqresIterator(pdb_path + pdb_label[name][0] + '.pdb')
                 count = 0
@@ -152,6 +155,8 @@ def build_entity_template(hc_tmpl,start_res,end_res):
 
                 entities_dict[name] = entity
                 system.entities.append(entity)
+    print('Checking entities_dict...')
+    print('db_begin: '+str(entities_dict['p62'].references[0].alignments[0].db_begin)+' db_end: '+str(entities_dict['p62'].references[0].alignments[0].db_end))
     return entities_dict
 # Load mature hierarchy
 hc_mature=load_hc(best_states[times[-1]])
@@ -377,7 +382,7 @@ def find_pos_restraint(_assemblies, chain_offset):
                 unique_name = "_".join([name, subcomplex.get_name()])
                 # Only include assemblies in the current NPC representation
                 if unique_name in _asym_units_list:
-                    print(name)
+                    # print(name)
                     # Get the asymmetric unit for that Nup
                     _asym = asym_unit_map[unique_name]
                     # Read in leaves
@@ -385,7 +390,7 @@ def find_pos_restraint(_assemblies, chain_offset):
                         x, y, z = IMP.core.XYZR(leaf).get_coordinates()
                         resids = IMP.atom.Fragment(leaf).get_residue_indexes()
                         # feature in new system
-                        print('Bead- '+str(resids[0]-(chain_offset[name]-1))+':'+str(resids[-1]-(chain_offset[name]-1)))
+                        # print('Bead- '+str(resids[0]-(chain_offset[name]-1))+':'+str(resids[-1]-(chain_offset[name]-1)))
                         new_feature=ihm.restraint.ResidueFeature([_asym(resids[0]-(chain_offset[name]-1),
                                                                         resids[-1]-(chain_offset[name]-1))])
                         # feature in old system
