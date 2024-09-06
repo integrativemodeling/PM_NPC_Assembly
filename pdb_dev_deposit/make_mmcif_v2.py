@@ -44,16 +44,6 @@ nstructures={'5min':1121,'6min':881,'8min':801,'10min':801,'15min':1121,'mature'
 structural_precision={'5min':232.552,'6min':144.083,'8min':104.579,'10min':99.893,'15min':100.826,'mature':104.258}
 membrane_D={'5min':515.3,'6min':583.9,'8min':727.4,'10min':845.9,'15min':798.3,'mature':870.0}
 membrane_H={'5min':427.2,'6min':424.9,'8min':429.9,'10min':405.4,'15min':342.5,'mature':300.0}
-# Dictionary with the starting residue number for each protein modeled
-start_res = {'Nup133': 518, 'Nup107': 150, 'Nup96': 277, 'SEC13': 14,
-             'SEH1': 1, 'Nup85': 9, 'Nup43': 4, 'Nup160': 41,
-             'Nup37': 9, 'Nup93': 1, 'Nup205': 9, 'Nup155': 20,
-             'Nup188': 1, 'p54': 128, 'p58': 248, 'p62': 334}
-# Dictionary with the ending residue number for each protein modeled
-end_res = {'Nup133': 1156, 'Nup107': 924, 'Nup96': 751, 'SEC13': 304,
-           'SEH1': 322, 'Nup85': 475, 'Nup43': 380, 'Nup160': 1201,
-           'Nup37': 326, 'Nup93': 815, 'Nup205': 1692, 'Nup155': 1375,
-           'Nup188': 1564, 'p54': 493, 'p58': 418, 'p62': 502}
 
 nstates=len(times)
 
@@ -110,7 +100,7 @@ print('Done.')
 
 # Include entities for each protein sequence
 print('Adding entities...')
-def build_entity_template(hc_tmpl,start_res,end_res):
+def build_entity_template(hc_tmpl):
     """Return an entity object for a Nup domain.
     """
     pdb_path='../data/cg_models/'
@@ -119,6 +109,16 @@ def build_entity_template(hc_tmpl,start_res,end_res):
                   'SEH1':'Q96EE3', 'Nup85':'Q9BW27', 'Nup43':'Q8NFH3', 'Nup160':'Q12769',
                   'Nup37':'Q8NFH4', 'Nup93':'Q8N1F7', 'Nup205':'Q92621', 'Nup155':'O75694',
                   'Nup188':'Q5SRE5', 'p54':'Q7Z3B4', 'p58':'Q9BVL2', 'p62':'P37198'}
+    # Dictionary with the starting residue number for each protein modeled
+    start_res = {'Nup133': 518, 'Nup107': 150, 'Nup96': 277, 'SEC13': 14,
+                    'SEH1': 1, 'Nup85': 9, 'Nup43': 4, 'Nup160': 41,
+                    'Nup37': 9, 'Nup93': 1, 'Nup205': 9, 'Nup155': 20,
+                    'Nup188': 1, 'p54': 128, 'p58': 248, 'p62': 334}
+    # Dictionary with the starting residue number for each protein modeled
+    end_res = {'Nup133': 1156, 'Nup107': 924, 'Nup96': 751, 'SEC13': 304,
+                    'SEH1': 322, 'Nup85': 475, 'Nup43': 380, 'Nup160': 1201,
+                    'Nup37': 326, 'Nup93': 815, 'Nup205': 1692, 'Nup155': 1375,
+                    'Nup188': 1564, 'p54': 493, 'p58': 418, 'p62': 502}
     # Dictionary with pdbID and chainID for each protein
     pdb_label = {'Nup133': ['5a9q','L'], 'Nup107': ['5a9q','M'], 'Nup96': ['5a9q','N'], 'SEC13': ['5a9q','O'],
                     'SEH1': ['5a9q','P'], 'Nup85': ['5a9q','Q'], 'Nup43': ['5a9q','R'], 'Nup160': ['5a9q','S'],
@@ -135,33 +135,54 @@ def build_entity_template(hc_tmpl,start_res,end_res):
                 ref = ihm.reference.UniProtSequence.from_accession(Uniprot_dict[name])
                 #ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name],entity_begin=start_res[name],db_end=end_res[name],entity_end=end_res[name]))
                 # UniprotID is for the Nup98-Nup96 fusion protein. Offset the alignment by the length of Nup98
+                query_seqres = SeqIO.PdbIO.PdbAtomIterator(pdb_path+pdb_label[name][0]+'.pdb')
+                count=0
+                for chain in query_seqres:
+                    if chain.id[-1] == pdb_label[name][1]:
+                        sequence = chain.seq
+                        count+=1
+                seqdif_list = []
+                d = "Sequences "
                 if name=='Nup96':
                     ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name]+880,db_end=end_res[name]+880))
                 else:
                     ref.alignments.append(ihm.reference.Alignment(db_begin=start_res[name], db_end=end_res[name]))
-                query_seqres = SeqIO.PdbIO.PdbSeqresIterator(pdb_path + pdb_label[name][0] + '.pdb')
-                count = 0
-                for chain in query_seqres:
-                    if chain.id[-1] == pdb_label[name][1]:
-                        sequence = chain.seq[start_res[name]-1:end_res[name]]
-                        count += 1
                 if count == 1:
-                    entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]), references=[ref])
+                    print(Uniprot_dict[name])
+                    print(sequence)
+                    entity = ihm.Entity(sequence.replace('X',''), description="_".join([name, subcomplex.get_name()]), references=[ref])
                 else:
                     print('Error! Check pdb file, ' + str(count) + ' sequences were found for ' + name)
 
+                """URL="http://www.uniprot.org/uniprot/"+Uniprot_dict[name]+".fasta"
+                response = requests.post(URL)
+                cData = ''.join(response.text)
+                Seq = StringIO(cData)
+                seq_dat = list(SeqIO.parse(Seq, 'fasta'))
+                sequence=seq_dat[0].seq
+                entity = ihm.Entity(sequence, description="_".join([name, subcomplex.get_name()]),references=[ref])"""
+
+                # Add random sequence to save time. For debugging
+                """AAs=['R','H','K','D','E','S','T','N','Q','C','G','P','A','V','I','L','M','F','Y','W']
+                sequence=''
+                for i in range(4000):
+                    AA_choice=random.randint(0, len(AAs)-1)
+                    sequence += AAs[AA_choice]
+                entity = ihm.Entity(sequence, description=name)"""
+
                 entities_dict[name] = entity
                 system.entities.append(entity)
+    print(entities_dict)
     return entities_dict
 # Load mature hierarchy
 hc_mature=load_hc(best_states[times[-1]])
 # Set entities from mature hierarchy
-possible_entities=build_entity_template(hc_mature,start_res,end_res)
+possible_entities=build_entity_template(hc_mature)
 print('Done.')
 
 # Define asymeteric units for each state
 print('Building asymmetric units...')
-def build_new_assembly_from_entities(hc_sc, edict, syst, chain_offset, asym_unit_map=None):
+def build_new_assembly_from_entities(hc_sc, edict, syst, asym_unit_map=None):
     """Return an asymmetric units and representation for each subcomplex
     """
 
@@ -172,7 +193,7 @@ def build_new_assembly_from_entities(hc_sc, edict, syst, chain_offset, asym_unit
     for nup in nups:
         name = nup.get_name().split("_")[0]
         unique_name = "_".join([name, hc_sc.get_name()])
-        asu = ihm.AsymUnit(edict[name], auth_seq_id_map=chain_offset[name]-1, details=unique_name)
+        asu = ihm.AsymUnit(edict[name], details=unique_name)
         nres = len(nup.get_children())
         rep = ihm.representation.FeatureSegment(asu,
                                                 rigid=True,
@@ -197,7 +218,7 @@ representations=[]
 asym=[]
 # For each subcomplex
 for sc in hc_mature.get_children():
-    sc_rep, sc_asym = build_new_assembly_from_entities(sc, possible_entities, system, start_res, asym_unit_map=asym_unit_map)
+    sc_rep, sc_asym = build_new_assembly_from_entities(sc, possible_entities, system, asym_unit_map=asym_unit_map)
     # Add each subcomplex to the appropriate variables
     representations.extend(sc_rep)
     asym.extend(sc_asym)
@@ -339,7 +360,7 @@ class MyModel(ihm.model.Model):
                 for leaf in IMP.atom.get_leaves(nup):
                     # parse info for sphere
                     x, y, z = IMP.core.XYZR(leaf).get_coordinates()
-                    resids = IMP.atom.Fragment(leaf).get_residue_indexes()-(start_res[name]-1)
+                    resids = IMP.atom.Fragment(leaf).get_residue_indexes()
                     R = IMP.core.XYZR(leaf).get_radius()
                     yield ihm.model.Sphere(asym_unit=_asym,
                                            seq_id_range = (resids[0],resids[-1]),
@@ -349,7 +370,7 @@ class MyModel(ihm.model.Model):
                                            radius=R)
 
 # function to find position restraint at a give time
-def find_pos_restraint(_assemblies, chain_offset):
+def find_pos_restraint(_assemblies):
     """Function to calculate position restraints
     """
     # List of all assemblies in the current representation
@@ -377,7 +398,6 @@ def find_pos_restraint(_assemblies, chain_offset):
                 unique_name = "_".join([name, subcomplex.get_name()])
                 # Only include assemblies in the current NPC representation
                 if unique_name in _asym_units_list:
-                    print(name)
                     # Get the asymmetric unit for that Nup
                     _asym = asym_unit_map[unique_name]
                     # Read in leaves
@@ -385,9 +405,7 @@ def find_pos_restraint(_assemblies, chain_offset):
                         x, y, z = IMP.core.XYZR(leaf).get_coordinates()
                         resids = IMP.atom.Fragment(leaf).get_residue_indexes()
                         # feature in new system
-                        print('Bead- '+str(resids[0]-(chain_offset[name]-1))+':'+str(resids[-1]-(chain_offset[name]-1)))
-                        new_feature=ihm.restraint.ResidueFeature([_asym(resids[0]-(chain_offset[name]-1),
-                                                                        resids[-1]-(chain_offset[name]-1))])
+                        new_feature=ihm.restraint.ResidueFeature([_asym(resids[0],resids[-1])])
                         # feature in old system
                         old_feature=ihm.restraint.PseudoSiteFeature(ihm.restraint.PseudoSite(x,y,z))
                         # Subcomplexes derived from 5ijo
@@ -416,16 +434,16 @@ def find_pos_restraint(_assemblies, chain_offset):
     return _pos_restraints
 
 # Function to find membrane bound portions of Nup155 and Nup160
-def find_MBM_residues(_asymm_units,chain_offset):
+def find_MBM_residues(_asymm_units):
     """Function to calculate membrane binding restraints
     """
     _objects=[]
     for _asymm_unit in _asymm_units:
         if "Nup155" in _asymm_unit.details:
-            obj1=_asymm_unit(262-(chain_offset[name]-1),271-(chain_offset[name]-1))
+            obj1=_asymm_unit(262,271)
             _objects.append(obj1)
         if "Nup160" in _asymm_unit.details:
-            obj2=_asymm_unit(260-(chain_offset[name]-1),268-(chain_offset[name]-1))
+            obj2=_asymm_unit(260,268)
             _objects.append(obj2)
     return ihm.restraint.ResidueFeature(_objects,details='Membrane bound residues on Nup155 and Nup160.')
 
@@ -455,13 +473,13 @@ for i in range(nstates):
             ihm.restraint.HarmonicDistanceRestraint(0.0),harmonic_force_constant=0.01,restrain_all=True)
     restraint_list.append(membrane_EV_restraint)
     # Membrane attraction
-    find_data=find_MBM_residues(assemblies_list[i],start_res)
+    find_data=find_MBM_residues(assemblies_list[i])
     membrane_attraction_restraint=ihm.restraint.InnerSurfaceGeometricRestraint(processed_EM_list[i],NE,
         find_data,
         ihm.restraint.HarmonicDistanceRestraint(0.0),harmonic_force_constant=0.001,restrain_all=True)
     restraint_list.append(membrane_attraction_restraint)
     # Position restraint
-    pos_restraint_list.append(find_pos_restraint(assemblies_list[i], start_res))
+    pos_restraint_list.append(find_pos_restraint(assemblies_list[i]))
     # add model to model group
     model_group = ihm.model.ModelGroup([m], name="Centroid model at time "+times[i]+'.')
     # add ensemble
