@@ -17,7 +17,6 @@ and the ordered process of NPC assembly is represented as a series of model grou
 import RMF
 import IMP
 import IMP.rmf
-import sys
 import ihm
 import ihm.representation
 import ihm.protocol
@@ -25,12 +24,9 @@ import ihm.dumper
 import ihm.citations
 import ihm.reference
 import ihm.analysis
-import random
-import os
-import re
+import ihm.startmodel
 from Bio import SeqIO
-from io import StringIO
-import requests
+
 
 main_dir='../'
 
@@ -108,6 +104,39 @@ imp = ihm.Software(
 system.software.append(imp)
 print('Done.')
 
+# Read in experimental datasets. Make list with different data at each time point,
+print('Adding experimental data...')
+# as ET data changes as a function of time
+exp_data=[]
+processed_EM_list=[]
+# Original EM
+em_database_loc = ihm.location.EMPIARLocation("EMD-3820")
+raw_em = ihm.dataset.EMDensityDataset(em_database_loc,details='Original electron tomography dataset.')
+# Original FCS
+FCS_database_loc=ihm.location.DatabaseLocation("idr0115",details=
+    'Raw FCS data available on the Image Data Resource: https://idr.openmicroscopy.org/')
+raw_FCS = ihm.dataset.Dataset(FCS_database_loc,details='Original fluorescence correlation spectroscopy dataset.')
+# Processed FCS
+FCS_excel_loc=ihm.location.InputFileLocation(main_dir+"data/qfluor_data/Exp_data.txt",repo=None)
+processed_FCS = ihm.dataset.Dataset(FCS_excel_loc,details='Processed fluorescence correlation spectroscopy dataset.')
+processed_FCS.parents.append(raw_FCS)
+# PDB
+pdb1_loc=ihm.location.PDBLocation("5a9q")
+pdb_structure1=ihm.dataset.PDBDataset(pdb1_loc,details='PDB for the Y-complex and connecting complex')
+pdb2_loc=ihm.location.PDBLocation("5ijo")
+pdb_structure2=ihm.dataset.PDBDataset(pdb2_loc,details='PDB for the inner ring')
+# Processed EM
+for i in range(0,len(times)):
+    em_processed_loc=ihm.location.InputFileLocation(main_dir+
+        'data/fit_etdata_with_gmm/Andrew_run/data/'+times[i]+'_150.mrc',repo=None)
+    processed_EM=ihm.dataset.EMDensityDataset(em_processed_loc,details='Processed EM data at '+times[i])
+    processed_EM.parents.append(raw_em)
+    processed_EM_list.append(processed_EM)
+    # append all experimental data
+    exp_data.append(ihm.dataset.DatasetGroup((raw_em,raw_FCS,processed_FCS,pdb_structure1,pdb_structure2,processed_EM),
+                                              name='Snapshot model data for '+times[i]))
+print('Done.')
+
 # Include entities for each protein sequence
 print('Adding entities...')
 def build_entity_template(hc_tmpl,start_res,end_res):
@@ -152,12 +181,6 @@ def build_entity_template(hc_tmpl,start_res,end_res):
 
                 entities_dict[name] = entity
                 system.entities.append(entity)
-    print('Checking entities_dict...')
-    print('accession: '+entities_dict['p62'].references[0].accession)
-    print('db_begin: '+str(entities_dict['p62'].references[0].alignments[0].db_begin)+' db_end: '+str(entities_dict['p62'].references[0].alignments[0].db_end))
-    print('accession: ' + entities_dict['Nup133'].references[0].accession)
-    print('db_begin: ' + str(entities_dict['Nup133'].references[0].alignments[0].db_begin) + ' db_end: ' + str(
-        entities_dict['Nup133'].references[0].alignments[0].db_end))
     return entities_dict
 # Load mature hierarchy
 hc_mature=load_hc(best_states[times[-1]])
@@ -170,6 +193,43 @@ print('Building asymmetric units...')
 def build_new_assembly_from_entities(hc_sc, edict, syst, chain_offset, asym_unit_map=None):
     """Return an asymmetric units and representation for each subcomplex
     """
+    # Dictionary that connects each protein to its location in the original PDB
+    # (structure1 - 5a9q, structure2 - 5ijo)
+    start_model_label = {'Nup133_yc_inner_cr': [pdb_structure1, '3'], 'Nup107_yc_inner_cr': [pdb_structure1, '4'],
+                         'Nup96_yc_inner_cr': [pdb_structure1, '5'], 'SEC13_yc_inner_cr': [pdb_structure1, '6'],
+                         'SEH1_yc_inner_cr': [pdb_structure1, '7'], 'Nup85_yc_inner_cr': [pdb_structure1, '8'],
+                         'Nup43_yc_inner_cr': [pdb_structure1, '9'], 'Nup160_yc_inner_cr': [pdb_structure1, 'a'],
+                         'Nup37_yc_inner_cr': [pdb_structure1, 'b'], 'Nup133_yc_outer_cr': [pdb_structure1, 'U'],
+                         'Nup107_yc_outer_cr': [pdb_structure1, 'V'], 'Nup96_yc_outer_cr': [pdb_structure1, 'W'],
+                         'SEC13_yc_outer_cr': [pdb_structure1, 'X'], 'SEH1_yc_outer_cr': [pdb_structure1, 'Y'],
+                         'Nup85_yc_outer_cr': [pdb_structure1, 'Z'], 'Nup43_yc_outer_cr': [pdb_structure1, '0'],
+                         'Nup160_yc_outer_cr': [pdb_structure1, '1'], 'Nup37_yc_outer_cr': [pdb_structure1, '2'],
+                         'Nup133_yc_inner_nr': [pdb_structure1, 'L'], 'Nup107_yc_inner_nr': [pdb_structure1, 'M'],
+                         'Nup96_yc_inner_nr': [pdb_structure1, 'N'], 'SEC13_yc_inner_nr': [pdb_structure1, 'O'],
+                         'SEH1_yc_inner_nr': [pdb_structure1, 'P'], 'Nup85_yc_inner_nr': [pdb_structure1, 'Q'],
+                         'Nup43_yc_inner_nr': [pdb_structure1, 'R'], 'Nup160_yc_inner_nr': [pdb_structure1, 'S'],
+                         'Nup37_yc_inner_nr': [pdb_structure1, 'T'], 'Nup133_yc_outer_nr': [pdb_structure1, 'C'],
+                         'Nup107_yc_outer_nr': [pdb_structure1, 'D'], 'Nup96_yc_outer_nr': [pdb_structure1, 'E'],
+                         'SEC13_yc_outer_nr': [pdb_structure1, 'F'], 'SEH1_yc_outer_nr': [pdb_structure1, 'G'],
+                         'Nup85_yc_outer_nr': [pdb_structure1, 'H'], 'Nup43_yc_outer_nr': [pdb_structure1, 'I'],
+                         'Nup160_yc_outer_nr': [pdb_structure1, 'J'], 'Nup37_yc_outer_nr': [pdb_structure1, 'K'],
+                         'Nup93_ir_core_1': [pdb_structure2, 'C'], 'Nup205_ir_core_1': [pdb_structure2, 'D'],
+                         'Nup155_ir_core_1': [pdb_structure2, 'E'],
+                         'Nup93_ir_core_2': [pdb_structure2, 'I'], 'Nup188_ir_core_2': [pdb_structure2, 'J'],
+                         'Nup155_ir_core_2': [pdb_structure2, 'K'],
+                         'Nup93_ir_core_3': [pdb_structure2, 'O'], 'Nup205_ir_core_3': [pdb_structure2, 'P'],
+                         'Nup155_ir_core_3': [pdb_structure2, 'Q'],
+                         'Nup93_ir_core_4': [pdb_structure2, 'U'], 'Nup188_ir_core_4': [pdb_structure2, 'V'],
+                         'Nup155_ir_core_4': [pdb_structure2, 'W'],
+                         'p54_ir_chan_1': [pdb_structure2, 'F'], 'p58_ir_chan_1': [pdb_structure2, 'G'],
+                         'p62_ir_chan_1': [pdb_structure2, 'H'],
+                         'p54_ir_chan_2': [pdb_structure2, 'L'], 'p58_ir_chan_2': [pdb_structure2, 'M'],
+                         'p62_ir_chan_2': [pdb_structure2, 'N'],
+                         'p54_ir_chan_3': [pdb_structure2, 'R'], 'p58_ir_chan_3': [pdb_structure2, 'S'],
+                         'p62_ir_chan_3': [pdb_structure2, 'T'],
+                         'p54_ir_chan_4': [pdb_structure2, 'X'], 'p58_ir_chan_4': [pdb_structure2, 'Y'],
+                         'p62_ir_chan_4': [pdb_structure2, 'Z'],
+                         'Nup155_conn_1': [pdb_structure1, 'B'], 'Nup155_conn_2': [pdb_structure1, 'A']}
 
     nups = [child for child in hc_sc.get_children() if "Density" not in child.get_name()]
 
@@ -180,10 +240,15 @@ def build_new_assembly_from_entities(hc_sc, edict, syst, chain_offset, asym_unit
         unique_name = "_".join([name, hc_sc.get_name()])
         asu = ihm.AsymUnit(edict[name], auth_seq_id_map=chain_offset[name]-1, details=unique_name)
         nres = len(nup.get_children())
+        spoke_name = unique_name.replace('spoke_1_', '').replace('spoke_2_', '').replace('spoke_3_', '').replace(
+            'spoke_4_', '').replace('spoke_5_', '').replace('spoke_6_', '').replace('spoke_7_', '').replace('spoke_8_','')
+        sm = ihm.startmodel.StartingModel(asu, start_model_label[spoke_name][0], start_model_label[spoke_name][1],
+                                          offset=chain_offset[name]-1, description=spoke_name)
         rep = ihm.representation.FeatureSegment(asu,
                                                 rigid=True,
                                                 primitive="sphere",
-                                                count=nres)
+                                                count=nres,
+                                                starting_model = sm)
         sc_representation.append(rep)
         asym_units.append(asu)
 
@@ -226,39 +291,6 @@ for i in range(nstates):
     # Create assembly for that timepoint
     assemblies_list.append(ihm.Assembly(asym_list,name='Assembly at '+times[i]))
 print('Done')
-
-
-
-# Read in experimental datasets. Make list with different data at each time point,
-print('Adding experimental data...')
-# as ET data changes as a function of time
-exp_data=[]
-processed_EM_list=[]
-# Original EM
-em_database_loc = ihm.location.EMPIARLocation("EMD-3820")
-raw_em = ihm.dataset.EMDensityDataset(em_database_loc,details='Original electron tomography dataset.')
-# Original FCS
-FCS_database_loc=ihm.location.DatabaseLocation("idr0115",details=
-    'Raw FCS data available on the Image Data Resource: https://idr.openmicroscopy.org/')
-raw_FCS = ihm.dataset.Dataset(FCS_database_loc,details='Original fluorescence correlation spectroscopy dataset.')
-# Processed FCS
-FCS_excel_loc=ihm.location.InputFileLocation(main_dir+"data/qfluor_data/Exp_data.txt",repo=None)
-processed_FCS = ihm.dataset.Dataset(FCS_excel_loc,details='Processed fluorescence correlation spectroscopy dataset.')
-# PDB
-pdb1_loc=ihm.location.PDBLocation("5a9q")
-pdb_structure1=ihm.dataset.PDBDataset(pdb1_loc,details='PDB for the Y-complex and connecting complex')
-pdb2_loc=ihm.location.PDBLocation("5ijo")
-pdb_structure2=ihm.dataset.PDBDataset(pdb1_loc,details='PDB for the inner ring')
-# Processed EM
-for i in range(0,len(times)):
-    em_processed_loc=ihm.location.InputFileLocation(main_dir+
-        'data/fit_etdata_with_gmm/Andrew_run/data/'+times[i]+'_150.mrc',repo=None)
-    processed_EM=ihm.dataset.EMDensityDataset(em_processed_loc,details='Processed EM data at '+times[i])
-    processed_EM_list.append(processed_EM)
-    # append all experimental data
-    exp_data.append(ihm.dataset.DatasetGroup((raw_em,raw_FCS,processed_FCS,pdb_structure1,pdb_structure2,processed_EM),
-                                              name='Snapshot model data for '+times[i]))
-print('Done.')
 
 
 # Define sampling of single snapshot model
