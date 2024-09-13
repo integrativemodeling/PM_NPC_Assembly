@@ -348,6 +348,12 @@ def snapshot_model_protocol(t,exp,assembly):
         num_models_begin=320000, num_models_end=801,
         script_file=ihm.location.WorkflowFileLocation(main_dir + 'score_graph/prepare_filtered_noNup188.py'),
         ordered=True, software=imp))
+    prot.steps.append(ihm.protocol.Step(
+        assembly=assembly, dataset_group=exp,
+        method='Trajectory construction',
+        name='Score trajectories based on the scores of snapshot models and the transitions between them.',
+        script_file=ihm.location.WorkflowFileLocation(main_dir + 'score_graph/noNup188/score_trj_noNup188.py'),
+        ordered=True, software=imp, multi_state=True))
     return prot
 
 # Create list for protocol of each snapshot
