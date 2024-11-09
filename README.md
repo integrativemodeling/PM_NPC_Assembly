@@ -12,7 +12,7 @@ This work is freely available under the terms of the Creative Commons
 Attribution-ShareAlike 4.0 International License.
 
 _Publications_:
-- A Latham, et al., in preparation. (2024).
+- A Latham, et al., bioRxiv. (2024). DOI: https://doi.org/10.1101/2024.08.06.606842
 - S Otsuka, et al., A quantitative map of nuclear pore assembly reveals two distinct mechanisms. Nature 613, 575–581 (2023).
 
 The code is divided into directories. Here, they are referenced in order of the steps necessary to create the model of NPC assembly:
