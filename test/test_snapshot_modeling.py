@@ -33,7 +33,7 @@ def run_sim(config_file):
     """Function that restarts a simulation by aligning the rmf to an existing rmf and updating the scoring function to scores_pm_refine2"""
     # read parameters
     with open(config_file, "r") as ymlfile:
-        prm = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        prm = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
     # handle for model components
     mdlc = prm["model_components"]
