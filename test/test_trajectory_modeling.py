@@ -8,8 +8,9 @@ import IMP.test
 
 # General paths
 TOPDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-data_path = os.path.join(TOPDIR, 'simulations_round2', 'Refined_energies_1model_460', 'filtered_noNup188')
-old_pdf_path = os.path.join(TOPDIR, 'simulations_round2', 'Refined_energies_1model_460', 'filtered_noNup188', 'total')
+top_data_path = os.path.join(TOPDIR, 'simulations_round2')
+data_path = os.path.join(top_data_path, 'Refined_energies_1model_460', 'filtered_noNup188')
+old_pdf_path = os.path.join(top_data_path, 'Refined_energies_1model_460', 'filtered_noNup188', 'total')
 
 
 
@@ -41,6 +42,7 @@ exp_comp={'Nup107':'exp_comp_Nup107.csv','Nup205':'exp_comp_Nup205.csv','Nup62':
 
 class TestSpatiotemporalDAG(unittest.TestCase):
 
+    @unittest.skipUnless(os.path.exists(top_data_path), "needs simulation results from Zenodo")
     def test_create_dag_and_check_pdf(self):
         """Test if spatiotemporal.create_DAG creates a model correctly. Tests that the model matches the previous model, that the precision matches the previous precision, and that the temporal precision matches the previous temporal precision."""
 
