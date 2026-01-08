@@ -273,7 +273,7 @@ def run_sim(config_file):
         logname += "_" + str(rem.get_my_index()) + ".log"
         log = open(logname, "w")
 
-        count_exchange = np.zeros((2, 1))
+        count_exchange = np.zeros((2,))
 
         for step in range(nstp):
             # run wfrq number of MC steps
