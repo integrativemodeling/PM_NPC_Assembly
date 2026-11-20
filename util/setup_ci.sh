@@ -3,18 +3,8 @@
 # Set up an environment to run tests under GitHub Actions
 # (see toplevel .github/workflows/build.yml)
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 python_version"
-  exit 1
-fi
-
-python_version=$1
-
-# get conda-forge, not main, packages
-conda config --remove channels defaults || :
-conda config --add channels conda-forge
 IMP_CONDA="imp"
 
-conda create --yes -q -n python${python_version} -c salilab python=${python_version} matplotlib ${IMP_CONDA} pyyaml
 eval "$(conda shell.bash hook)"
-conda activate python${python_version}
+conda activate test
+conda install --yes -q matplotlib ${IMP_CONDA} pyyaml
